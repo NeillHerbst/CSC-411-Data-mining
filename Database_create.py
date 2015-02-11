@@ -1,4 +1,16 @@
 import sqlite3
+import os
+import json
 
-con=sqlite3.connect('Data_mining.db')
+with open('config.json') as f:
+    config = json.load(f)
+
+path = os.path.join(config['datadir1'],'Data_mining.db')
+
+try:
+    con = lite.connect(path)
+
+except IOError,e:
+    print e
+    
 con.close()
