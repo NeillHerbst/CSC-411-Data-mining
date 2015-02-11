@@ -4,13 +4,11 @@ import json
 import os
 
 
-with open('Sample_list.json') as f:
-    config1 = json.load(f)
-    path1 = os.path.join(config1['datadir'],'Sample_list.xlsx')
-    
-with open('database.json') as x:
-    config2 = json.load(x)
-    path2 = os.path.join(config2['datadir'],'Data_mining.db')
+with open('config.json') as f:
+    config = json.load(f)
+
+path1 = os.path.join(config['datadir'],'Sample_list.xlsx')
+path2 = os.path.join(config['datadir1'],'Data_mining.db')
     
 try:
     con = lite.connect(path2)
