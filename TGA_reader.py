@@ -16,7 +16,6 @@ read_names = []
 names = ['']
 
 # Collecting metadata
-
 for line in datafile:
     lineitems = line.strip().split('\t')
 
@@ -29,7 +28,6 @@ for line in datafile:
         break
 
 # Collecting header names
-
 for i, line in enumerate(datafile):
 
     if 'Time' in line:
