@@ -7,8 +7,8 @@ import io
 with open('config.json', 'rU') as f:
     config = json.load(f)
 
-txtfile = os.path.join(config['datadir2'], 'Sample 74 in air.txt')
-datafile = io.open(txtfile, 'rU', encoding='iso8859')
+file_path = os.path.join(config['datadir2'], 'Sample 74 in air.txt')
+txtfile = io.open(file_path, 'rU', encoding='iso8859')
 
 details = {}
 datapoints = []
@@ -16,7 +16,7 @@ read_names = []
 names = ['']
 
 # Collecting metadata
-for line in datafile:
+for line in txtfile:
     lineitems = line.strip().split('\t')
 
     if len(lineitems) == 2:
@@ -28,7 +28,7 @@ for line in datafile:
         break
 
 # Collecting header names
-for i, line in enumerate(datafile):
+for i, line in enumerate(txtfile):
 
     if 'Time' in line:
         lineitems = line.strip().split('\t')
@@ -49,14 +49,29 @@ for i in range(7):
     else:
         names.append(read_names[i].rstrip() + ' ' + read_names[i + 6].rstrip())
 
-# Reading data and populating DataFrame
-datafile.close()
-datafile = io.open(txtfile, 'rU', encoding='iso8859')
+# Detecting line index of lines to be deleted
+for i, line in enumerate(txtfile):
+    if '2) TGA Temperature Scan' in line:
+        del_line = i + 1
+        break
 
-for i, line in enumerate(datafile):
+# Reading data and populating DataFrame
+txtfile.close()
+txtfile = io.open(file_path, 'rU', encoding='iso8859')
+
+for i, line in enumerate(txtfile):
     if 'Gas Flow' in line:
         break
 
-datafile = pd.read_csv(datafile, delimiter='\t', header=None)
+datafile = pd.read_csv(txtfile, delimiter='\t', header=None)
 dataframe = pd.DataFrame(datafile)
 dataframe.columns = names
+
+# Dropping unecessary lines and columns
+for i, line in enumerate(txtfile):
+    if '2) TGA Temperature Scan' in line:
+        del_line = i
+        break
+
+dataframe = dataframe.drop('', axis=1)
+dataframe = dataframe.drop(del_line, axis=0)
