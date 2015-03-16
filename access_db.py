@@ -14,7 +14,7 @@ with open('config.json') as f:
     config = json.load(f)
 
 path1 = os.path.join(config['datadir'], 'Sample_list_norm2.xlsx')
-path2 = os.path.join(config['datadir1'], 'access.db')
+path2 = os.path.join(config['datadir'], 'access.db')
 
 try:
     con = lite.connect(path2)
