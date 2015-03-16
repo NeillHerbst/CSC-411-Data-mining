@@ -14,10 +14,10 @@ with open('config.json') as f:
     config = json.load(f)
 
 path1 = os.path.join(config['datadir'], 'Sample_list_norm2.xlsx')
-path2 = os.path.join(config['datadir'], 'access.db')
+#path2 = os.path.join(config['datadir'], 'access.db')
 
 try:
-    con = lite.connect(path2)
+    con = lite.connect('access.db')
     datafile = pd.ExcelFile(path1)
     stop = False
 
