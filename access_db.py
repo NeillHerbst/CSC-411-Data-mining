@@ -17,7 +17,7 @@ path1 = os.path.join(config['datadir'], 'Sample_list_norm2.xlsx')
 path2 = os.path.join(config['datadir'], 'access.db')
 
 try:
-    con = lite.connect('path2')
+    con = lite.connect('/Users/Neill/Desktop/access.db')
     datafile = pd.ExcelFile(path1)
     stop = False
 
@@ -25,7 +25,7 @@ except IOError:
     print 'One of the files does not exist'
     stop = True
 
-if stop is None:
+if stop is False:
     with con:
         cur = con.cursor()
         people = datafile.parse('People', header=0)
@@ -45,8 +45,8 @@ if stop is None:
         people_df.to_sql('People', con, if_exists='replace')
         batches_df.to_sql('Batches', con, if_exists='replace')
         synthesis_df.to_sql('Synthesis', con, if_exists='replace')
-        parm_type_df.to_sql('Parm type', con, if_exists='replace')
+        parm_type_df.to_sql('Parm_type', con, if_exists='replace')
         parameters_df.to_sql('Parameter', con, if_exists='replace')
-        values_df.to_sql('Parm values', con, if_exists='replace')
+        values_df.to_sql('Parm_values', con, if_exists='replace')
 
     con.close()
