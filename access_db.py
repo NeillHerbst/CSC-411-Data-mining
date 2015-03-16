@@ -17,7 +17,7 @@ path1 = os.path.join(config['datadir'], 'Sample_list_norm2.xlsx')
 path2 = os.path.join(config['datadir'], 'access.db')
 
 try:
-    con = lite.connect('/Users/Neill/Desktop/access.db')
+    con = lite.connect(path2)
     datafile = pd.ExcelFile(path1)
     stop = False
 
