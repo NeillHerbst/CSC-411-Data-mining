@@ -17,8 +17,7 @@ path1 = os.path.join(config['datadir'], 'Sample_list_norm2.xlsx')
 path2 = os.path.join(config['datadir'], 'access.db')
 
 try:
-    con1 = lite.connect(':memory: access.db')
-    con2 = lite.connect(path2)
+    con = lite.connect(path2)
     datafile = pd.ExcelFile(path1)
     stop = False
 
@@ -27,8 +26,8 @@ except IOError:
     stop = True
 
 if stop is False:
-    with con1:
-        cur = con1.cursor()
+    with con:
+        cur = con.cursor()
         people = datafile.parse('People', header=0)
         batches = datafile.parse('Batches', header=0)
         synthesis = datafile.parse('Synthesis', header=0)
@@ -43,36 +42,43 @@ if stop is False:
         parameters_df = pd.DataFrame(parameters)
         values_df = pd.DataFrame(values)
 
-        people_df.to_sql('People', con1, if_exists='replace')
-        batches_df.to_sql('Batches', con1, if_exists='replace')
-        synthesis_df.to_sql('Synthesis', con1, if_exists='replace')
-        parm_type_df.to_sql('Parm_type', con1, if_exists='replace')
-        parameters_df.to_sql('Parameters', con1, if_exists='replace')
-        values_df.to_sql('Parm_values', con1, if_exists='replace')
+        people_df.to_sql('People1', con, if_exists='replace')
+        batches_df.to_sql('Batches1', con, if_exists='replace')
+        synthesis_df.to_sql('Synthesis1', con, if_exists='replace')
+        parm_type_df.to_sql('Parm_type1', con, if_exists='replace')
+        parameters_df.to_sql('Parameters1', con, if_exists='replace')
+        values_df.to_sql('Parm_values1', con, if_exists='replace')
 
-    with con2 and con1:
-        cur1 = con1.cursor()
-        cur2 = con2.cursor()
-        cur2.executescript('''
+        cur.executescript('''
         drop table if exists Parm_values;
         drop table if exists People;
         drop table if exists Batches;
         drop table if exists Synthesis;
         drop table if exists Parm_type;
         drop table if exists Parameters;
-        drop table if exists Parameter;
-        drop table if exists Par_values;
 
-        create table Parm_values(batch_id INT, syn_id INT, step_id INT, par_id INT, val);
+        create table Parm_values(batch_id INT, syn_id INT, step_id INT, \
+        par_id INT, val);
         create table People(owner_id INT PRIMARY KEY, description TEXT);
         create table Batches(batch_id TEXT PRIMARY KEY, syn_id INT, owner_id);
         create table Synthesis(syn_id INT PRIMARY KEY, description TEXT);
         create table Parm_type(type_id INT PRIMARY KEY, type TEXT);
-        create table Parameters(par_id INT PRIMARY KEY, type_id INT, description TEXT);
-        ''')
+        create table Parameters(par_id INT PRIMARY KEY, type_id INT, \
+        description TEXT);
 
-        table1 = cur1.execute('select owner_id, description from People')
-        data1 = cur1.fetchall()
-        print data1[0][0]
-        cur2.execute('insert into People values (?,?) ', [data1[0][0], data1[0][1]])
-        con2.commit()
+        insert into Parm_values select batch_id, syn_id, step_id, par_id, val \
+        from Parm_values1;
+        insert into People select owner_id, description from People1;
+        insert into Batches select batch_id, syn_id, owner_id from Batches1;
+        insert into Synthesis select syn_id, description from Synthesis1;
+        insert into Parm_type select type_id, type from Parm_type1;
+        insert into Parameters select par_id, type_id, description from \
+        Parameters1;
+
+        drop table Parm_values1;
+        drop table People1;
+        drop table Batches1;
+        drop table Synthesis1;
+        drop table Parm_type1;
+        drop table Parameters1;
+        ''')
