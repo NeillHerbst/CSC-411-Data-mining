@@ -14,7 +14,7 @@ with open('config.json') as f:
     config = json.load(f)
 
 path1 = os.path.join(config['datadir'], 'Sample_list_norm2.xlsx')
-path2 = os.path.join(config['datadir'], 'access.db')
+path2 = os.path.join(config['datadir'], 'access2.db')
 
 try:
     con = lite.connect(path2)
@@ -42,7 +42,7 @@ if stop is False:
         parameters_df = pd.DataFrame(people)
         values_df = pd.DataFrame(people)
 
-        people_df.to_sql('People', con, if_exists='replace')
+#        people_df.to_sql('People', con, if_exists='replace')
         batches_df.to_sql('Batches', con, if_exists='replace')
         synthesis_df.to_sql('Synthesis', con, if_exists='replace')
         parm_type_df.to_sql('Parm_type', con, if_exists='replace')
