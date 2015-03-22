@@ -13,7 +13,7 @@ import os
 with open('config.json') as f:
     config = json.load(f)
 
-path1 = os.path.join(config['datadir'], 'Sample_list_norm2.xlsx')
+path1 = os.path.join(config['datadir'], 'Sample_list_database.xlsx')
 path2 = os.path.join(config['datadir'], 'access.db')
 
 try:
