@@ -70,8 +70,8 @@ if stop is False:
 
         create table People(owner_id INT PRIMARY KEY, description TEXT);
 
-        create table Batches(batch_id TEXT PRIMARY KEY, syn_id INT, owner_id,\
-            FOREIGN KEY (syn_id) REFERENCES Synthesis(syn_id),\
+        create table Batches(batch_id TEXT PRIMARY KEY, item_name TEXT, syn_id\
+            INT, owner_id, FOREIGN KEY (syn_id) REFERENCES Synthesis(syn_id),\
             FOREIGN KEY (owner_id) REFERENCES People(owner_id));
 
         create table Steps(syn_id INT, step_id INT PRIMARY KEY, par_id INT,\
@@ -90,7 +90,8 @@ if stop is False:
             from Parm_values1;
 
         insert into People select owner_id, description from People1;
-        insert into Batches select batch_id, syn_id, owner_id from Batches1;
+        insert into Batches select batch_id, item_name, syn_id, owner_id from \
+        Batches1;
         insert into Synthesis select syn_id, description from Synthesis1;
         insert into Parm_type select type_id, type from Parm_type1;
         insert into Parameters select par_id, type_id, description from \
