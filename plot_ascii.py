@@ -32,6 +32,6 @@ for i, file_path in enumerate(glob.glob(path)):
     plt.xlabel("$2{\Theta}$")
     plt.ylabel('Counts')
     plt.title(file_name)
-    plt.show(False)
     plt.savefig(os.path.join(plot_path, '%s.pdf' % file_name), figsize=(5, 5),
                 dpi=600)
+    plt.close(i)
