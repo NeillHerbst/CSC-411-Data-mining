@@ -14,18 +14,22 @@ import numpy as np
 with open('config.json') as f:
     config = json.load(f)
 
-path = os.path.join(config['datadir3'], '*.ASC')
-
+path = os.path.join(config['datadir3'], '*/*.ASC')
+n = 0
 for i, file_path in enumerate(glob.glob(path)):
     file_name = os.path.basename(file_path)
     file_name = file_name.replace('', '')[:-4]
     plot_path = config['datadir4']
-
+    n += 1
     try:
         x, y = np.loadtxt(file_path, unpack=True)
 
     except ValueError:
         x, y, z = np.loadtxt(file_path, unpack=True)
+    
+    except ValueError:
+        x, y, z, u = np.loadtxt(file_path, unpack=True)
+        
 
     plt.figure(i)
     plt.plot(x, y)
@@ -35,3 +39,4 @@ for i, file_path in enumerate(glob.glob(path)):
     plt.savefig(os.path.join(plot_path, '%s.pdf' % file_name), figsize=(5, 5),
                 dpi=600)
     plt.close(i)
+print '%s Files plotted' % n
