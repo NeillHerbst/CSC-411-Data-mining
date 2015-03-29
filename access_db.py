@@ -10,6 +10,7 @@ import pandas as pd
 import json
 import os
 
+
 with open('config.json') as f:
     config = json.load(f)
 
@@ -43,6 +44,7 @@ if stop is False:
         parameters_df = pd.DataFrame(parameters)
         values_df = pd.DataFrame(values)
         steps_df = pd.DataFrame(steps)
+       
 
         people_df.to_sql('People1', con, if_exists='replace')
         batches_df.to_sql('Batches1', con, if_exists='replace')

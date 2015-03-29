@@ -26,11 +26,10 @@ for i, file_path in enumerate(glob.glob(path)):
 
     except ValueError:
         x, y, z = np.loadtxt(file_path, unpack=True)
-    
+
     except ValueError:
         x, y, z, u = np.loadtxt(file_path, unpack=True)
-        
-
+  
     plt.figure(i)
     plt.plot(x, y)
     plt.xlabel("$2{\Theta}$")
