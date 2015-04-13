@@ -9,8 +9,10 @@ import os
 import glob
 import json
 from matplotlib import pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import re
+import heapq
 
 # Getting all working directories
 with open('config.json') as f:
@@ -19,9 +21,46 @@ with open('config.json') as f:
 # Create path to datafiles
 path = os.path.join(config['ASCII Files'], '*Sample*/*.ASC')
 
+# Create path to XRD peak patterns
+XRD1 = os.path.join(config['Peak Patterns'], 'Hydrotalcite.csv')
+XRD2 = os.path.join(config['Peak Patterns'], 'Hydrotalcite2.csv')
+
 # Initializing the counter
 n = 0
 
+# Loading peak patterns
+d1, I1 = np.loadtxt(XRD1, delimiter=',', skiprows=1, usecols=(4, 6),
+                    unpack=True)
+d2, I2 = np.loadtxt(XRD2, delimiter=',', skiprows=1, usecols=(4, 6),
+                    unpack=True)
+# Calculating 2Theta values
+two_theta1 = 2 * np.arcsin(1.79/(2*d1)) * 180/np.pi
+two_theta2 = 2 * np.arcsin(1.79/(2*d1)) * 180/np.pi
+
+# Retrieving 3 largets peaks
+maxpeaks1 = heapq.nlargest(3, I1)
+maxpeaks2 = heapq.nlargest(3, I2)
+
+# Retrieving relaive 2Theta values for Max peaks
+theta1 = []
+intens1 = []
+
+theta2 = []
+intens2 = []
+
+for i, val in enumerate(I1):
+    if val == maxpeaks1[0] or val == maxpeaks1[1] or \
+     val == maxpeaks1[2]:
+        theta1.append(two_theta1[i])
+        intens1.append(val)
+
+for i, val in enumerate(I2):
+    if val == maxpeaks2[0] or val == maxpeaks2[1] or \
+     val == maxpeaks2[2]:
+        theta2.append(two_theta2[i])
+        intens2.append(val)
+
+    
 # Looping through all ASCII files
 for i, file_path in enumerate(glob.glob(path)):
 
@@ -49,16 +88,38 @@ for i, file_path in enumerate(glob.glob(path)):
 
         # Loading data form file
         x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
+        
+        # getting actual count values
+        peak1 = np.interp(theta1[0], x, y)
+        peak2 = np.interp(theta2[0], x, y)
+        plt_peak1 = []
+        plt_peak2 = []
+
+        for intens in intens1:
+            plt_peak1.append(intens/100 * peak1)
+
+        for intens in intens2:
+            plt_peak2.append(intens/100 * peak2)
 
         # Plotting of ASCII files
         plot_path = config['Plot XRD']
-        plt.figure(i)
-        plt.plot(x, y)
-        plt.xlabel("$2{\Theta}$")
-        plt.ylabel('Counts')
-        plt.title(file_name)
-        plt.savefig(os.path.join(plot_path, '{0}.pdf'.format(plot_name)),
-                    figsize=(5, 5), dpi=600)
-        plt.close(i)
-        
+
+        with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
+            fig = plt.figure()
+            plt.plot(x, y, 'k')
+
+            for i in range(len(theta1)):
+                plt.plot([theta1[i], theta1[i]], [0, plt_peak1[i]], 'r')
+
+            for i in range(len(theta2)):
+                plt.plot([theta2[i], theta2[i]], [0, plt_peak2[i]], 'b')
+
+            plt.xlabel("$2{\Theta}$")
+            plt.ylabel('Counts')
+            plt.title(plot_name)
+            plt.yscale('linear')
+            plt.savefig(os.path.join(plot_path, '{0}.pdf'.format(plot_name)),
+                        figsize=(5, 5), dpi=600)
+            pdf.savefig()
+            plt.close()
 print '{0} Files plotted'.format(n)
