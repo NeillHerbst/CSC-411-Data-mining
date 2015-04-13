@@ -119,9 +119,9 @@ for i, file_path in enumerate(glob.glob(path)):
             plt.xlabel("$2{\Theta}$")
             plt.ylabel('Counts')
             plt.title(plot_name)
+            plt.legend(loc=0)
             plt.savefig(os.path.join(plot_path, '{0}.pdf'.format(plot_name)),
                         figsize=(5, 5), dpi=600)
-            plt.legend(loc=0)
             pdf.savefig()
             plt.close()
 print '{0} Files plotted'.format(n)
