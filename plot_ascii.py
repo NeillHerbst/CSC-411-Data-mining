@@ -109,17 +109,19 @@ for i, file_path in enumerate(glob.glob(path)):
             plt.plot(x, y, 'k')
 
             for i in range(len(theta1)):
-                plt.plot([theta1[i], theta1[i]], [0, plt_peak1[i]], 'r')
+                plt.plot([theta1[i], theta1[i]], [0, plt_peak1[i]], 'r',
+                         label='Hydrotalcite')
 
             for i in range(len(theta2)):
-                plt.plot([theta2[i], theta2[i]], [0, plt_peak2[i]], 'b')
+                plt.plot([theta2[i], theta2[i]], [0, plt_peak2[i]], 'b',
+                         label='Hydrotalcite2')
 
             plt.xlabel("$2{\Theta}$")
             plt.ylabel('Counts')
             plt.title(plot_name)
-            plt.yscale('linear')
             plt.savefig(os.path.join(plot_path, '{0}.pdf'.format(plot_name)),
                         figsize=(5, 5), dpi=600)
+            plt.legend(loc=0)
             pdf.savefig()
             plt.close()
 print '{0} Files plotted'.format(n)
