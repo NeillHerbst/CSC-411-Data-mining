@@ -18,12 +18,15 @@ import heapq
 with open('config.json') as f:
     config = json.load(f)
 
+def filename(location, pattern):
+    return os.path.expanduser(os.path.join(config[location], pattern))
+    
 # Create path to datafiles
-path = os.path.join(config['ASCII Files'], '*Sample*/*.ASC')
+path = filename('ASCII Files', '*Sample*/*.ASC')
 
 # Create path to XRD peak patterns
-XRD1 = os.path.join(config['Peak Patterns'], 'Hydrotalcite.csv')
-XRD2 = os.path.join(config['Peak Patterns'], 'Hydrotalcite2.csv')
+XRD1 = filename('Peak Patterns', 'Hydrotalcite.csv')
+XRD2 = filename('Peak Patterns', 'Hydrotalcite2.csv')
 
 # Initialize the counter
 n = 0
@@ -60,7 +63,7 @@ for i, val in enumerate(I2):
         theta2.append(two_theta2[i])
         intens2.append(val)
 
-plot_path = config['Plot XRD']
+plot_path = filename('Plot XRD', '')
 
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
