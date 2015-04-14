@@ -79,7 +79,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
         number, subnumber = m.groups()
         if not subnumber:
             subnumber = 'a'
-        plot_name = 'XRD_{0:04d}.{}'.format(int(number), subnumber)
+        plot_name = 'XRD_{0:04d}.{1}'.format(int(number), subnumber)
 
         # Check if plot already exists
         plot_filename = os.path.join(plot_path, '{0}.pdf'.format(plot_name))
@@ -117,11 +117,11 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
                      linefmt='b', markerfmt=' ', basefmt=' ',
                      label='Hydrotalcite2')
 
-            plt.xlabel("$2{\Theta}$")
+            plt.xlabel("$2\theta$")
             plt.ylabel('Counts')
             plt.title(plot_name)
             plt.legend(loc=0)
-            plt.savefig(plot_filename),
+            plt.savefig(plot_filename,
                         figsize=(5, 5), dpi=600)
             pdf.savefig()
             plt.close()
