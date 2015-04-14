@@ -60,51 +60,51 @@ for i, val in enumerate(I2):
         theta2.append(two_theta2[i])
         intens2.append(val)
 
-    
+plot_path = config['Plot XRD']
+
 # Looping through all ASCII files
-for i, file_path in enumerate(glob.glob(path)):
+with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
+    for i, file_path in enumerate(glob.glob(path)[:4]):
 
-    # Reading individual file name and extracting sample number
-    file_name = os.path.basename(file_path)
-    file_name = file_name.replace('', '')[:-4]
+        # Reading individual file name and extracting sample number
+        file_name = os.path.basename(file_path)
+        file_name = file_name.replace('', '')[:-4]
 
-    matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
-    m = matcher.match(file_name)
-    name_groups = m.groups()
-    if name_groups[1] == '' or name_groups[1] == None:
-        plot_name = 'XRD_' + str(name_groups[0]).zfill(4)
-    else:
-        plot_name = 'XRD_' + str(name_groups[0]).zfill(4) + '.' \
-                    + str(name_groups[1])
+        matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
+        m = matcher.match(file_name)
+        name_groups = m.groups()
+        if name_groups[1] == '' or name_groups[1] == None:
+            plot_name = 'XRD_' + str(name_groups[0]).zfill(4)
+        else:
+            plot_name = 'XRD_' + str(name_groups[0]).zfill(4) + '.' \
+                        + str(name_groups[1])
 
-    # Checking if plot allready exists
-    exists = os.path.isfile(os.path.join(config['Plot XRD'],
-                                         '{0}.pdf'.format(plot_name)))
+        # Checking if plot allready exists
+        exists = os.path.isfile(os.path.join(config['Plot XRD'],
+                                             '{0}.pdf'.format(plot_name)))
 
-    # Plotting non-existing files
-    if exists is False:
-            # Counter
-        n += 1
+        # Plotting non-existing files
+        if exists is False:
+                # Counter
+            n += 1
+            print plot_name
 
-        # Loading data form file
-        x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
-        
-        # getting actual count values
-        peak1 = np.interp(theta1[0], x, y)
-        peak2 = np.interp(theta2[0], x, y)
-        plt_peak1 = []
-        plt_peak2 = []
+            # Loading data form file
+            x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
 
-        for intens in intens1:
-            plt_peak1.append(intens/100 * peak1)
+            # getting actual count values
+            peak1 = np.interp(theta1[0], x, y)
+            peak2 = np.interp(theta2[0], x, y)
+            plt_peak1 = []
+            plt_peak2 = []
 
-        for intens in intens2:
-            plt_peak2.append(intens/100 * peak2)
+            for intens in intens1:
+                plt_peak1.append(intens/100 * peak1)
 
-        # Plotting of ASCII files
-        plot_path = config['Plot XRD']
+            for intens in intens2:
+                plt_peak2.append(intens/100 * peak2)
 
-        with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
+            # Plotting of ASCII files
             fig = plt.figure()
             plt.plot(x, y, 'k')
 
