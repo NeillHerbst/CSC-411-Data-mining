@@ -64,7 +64,7 @@ plot_path = config['Plot XRD']
 
 # Looping through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
-    for i, file_path in enumerate(glob.glob(path)[:4]):
+    for i, file_path in enumerate(glob.glob(path)):
 
         # Reading individual file name and extracting sample number
         file_name = os.path.basename(file_path)
@@ -108,11 +108,13 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             fig = plt.figure()
             plt.plot(x, y, 'k')
 
-            plt.stem(theta1, plt_peak1, linefmt='r', markerfmt=' ',
-                         label='Hydrotalcite')
+            plt.stem(theta1, plt_peak1,
+                     linefmt='r', markerfmt=' ', basefmt=' ',
+                     label='Hydrotalcite')
 
-            plt.stem(theta2, plt_peak2, linefmt='b', markerfmt=' ',
-                         label='Hydrotalcite2')
+            plt.stem(theta2, plt_peak2,
+                     linefmt='b', markerfmt=' ', basefmt=' ',
+                     label='Hydrotalcite2')
 
             plt.xlabel("$2{\Theta}$")
             plt.ylabel('Counts')
