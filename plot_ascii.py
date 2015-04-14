@@ -72,6 +72,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
 
         matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
         m = matcher.match(file_name)
+
         number, subnumber = m.groups()
         if not subnumber:
             subnumber = 'a'
@@ -102,7 +103,6 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
                 plt_peak2.append(intens/100 * peak2)
 
             # Plot ASCII files
-
             fig = plt.figure()
             plt.plot(x, y, 'k')
 
