@@ -13,6 +13,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import re
 import heapq
+import pandas as pd
 
 # Get all working directories
 with open('config.json') as f:
@@ -64,6 +65,8 @@ for i, val in enumerate(I2):
         intens2.append(val)
 
 plot_path = filename('Plot XRD', '')
+excel_path = filename('Data', 'XRD_results.xlsx')
+filename_lst = []
 
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
@@ -87,13 +90,16 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
 
         # Plot non-existing files
         if not exists:
-                # Counter
+            # Save filename to excel spread sheet
+            filename_lst.append(plot_name)
+
+            # Counter
             n += 1
 
             # Load data from file
             x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
 
-            # get actual count values
+            # Get actual count values
             peak1 = np.interp(theta1[0], x, y)
             peak2 = np.interp(theta2[0], x, y)
             plt_peak1 = []
@@ -126,3 +132,8 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             pdf.savefig()
             plt.close()
 print '{0} Files plotted'.format(n)
+
+# Saving excel file
+excel_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
+excel_df = pd.DataFrame(excel_dict)
+excel_df.to_excel(excel_path)
