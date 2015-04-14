@@ -14,11 +14,6 @@ import numpy as np
 import re
 import heapq
 
-
-def readpeakfile(f):
-    d, i = np.loadtxt(f, delimiter=',', skiprows=1, usecols=(4, 6), unpack=True)
-    two_theta = np.rad2deg(2*np.arcsin(1.79/(2*d1)))
-
 # Get all working directories
 with open('config.json') as f:
     config = json.load(f)
@@ -26,12 +21,7 @@ with open('config.json') as f:
 # Create path to datafiles
 path = os.path.join(config['ASCII Files'], '*Sample*/*.ASC')
 
-
-
 # Create path to XRD peak patterns
-knownpeakfiles = glob.glob(os.path.join(config['Peak Patterns'], '*.csv'))
-knownpeaks = [readpeakfile(f) for f in knownpeakfiles]
-
 XRD1 = os.path.join(config['Peak Patterns'], 'Hydrotalcite.csv')
 XRD2 = os.path.join(config['Peak Patterns'], 'Hydrotalcite2.csv')
 
@@ -70,6 +60,7 @@ for i, val in enumerate(I2):
         theta2.append(two_theta2[i])
         intens2.append(val)
 
+plot_path = config['Plot XRD']
 
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
@@ -87,7 +78,6 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
         plot_name = 'XRD_{0:04d}.{}'.format(int(number), subnumber)
 
         # Check if plot already exists
-        plot_path = config['Plot XRD']
         plot_filename = os.path.join(plot_path, '{0}.pdf'.format(plot_name))
         exists = os.path.isfile(plot_filename)
 
