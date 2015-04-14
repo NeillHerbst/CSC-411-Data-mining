@@ -14,34 +14,37 @@ import numpy as np
 import re
 import heapq
 
-# Getting all working directories
+# Get all working directories
 with open('config.json') as f:
     config = json.load(f)
 
+def filename(location, pattern):
+    return os.path.expanduser(os.path.join(config[location], pattern))
+    
 # Create path to datafiles
-path = os.path.join(config['ASCII Files'], '*Sample*/*.ASC')
+path = filename('ASCII Files', '*Sample*/*.ASC')
 
 # Create path to XRD peak patterns
-XRD1 = os.path.join(config['Peak Patterns'], 'Hydrotalcite.csv')
-XRD2 = os.path.join(config['Peak Patterns'], 'Hydrotalcite2.csv')
+XRD1 = filename('Peak Patterns', 'Hydrotalcite.csv')
+XRD2 = filename('Peak Patterns', 'Hydrotalcite2.csv')
 
-# Initializing the counter
+# Initialize the counter
 n = 0
 
-# Loading peak patterns
+# Load peak patterns
 d1, I1 = np.loadtxt(XRD1, delimiter=',', skiprows=1, usecols=(4, 6),
                     unpack=True)
 d2, I2 = np.loadtxt(XRD2, delimiter=',', skiprows=1, usecols=(4, 6),
                     unpack=True)
-# Calculating 2Theta values
+# Calculate 2Theta values
 two_theta1 = 2 * np.arcsin(1.79/(2*d1)) * 180/np.pi
 two_theta2 = 2 * np.arcsin(1.79/(2*d1)) * 180/np.pi
 
-# Retrieving 3 largets peaks
+# Retrieve 3 largets peaks
 maxpeaks1 = heapq.nlargest(3, I1)
 maxpeaks2 = heapq.nlargest(3, I2)
 
-# Retrieving relaive 2Theta values for Max peaks
+# Retrieve relative 2Theta values for Max peaks
 theta1 = []
 intens1 = []
 
@@ -60,67 +63,65 @@ for i, val in enumerate(I2):
         theta2.append(two_theta2[i])
         intens2.append(val)
 
-    
-# Looping through all ASCII files
-for i, file_path in enumerate(glob.glob(path)):
+plot_path = filename('Plot XRD', '')
 
-    # Reading individual file name and extracting sample number
-    file_name = os.path.basename(file_path)
-    file_name = file_name.replace('', '')[:-4]
+# Loop through all ASCII files
+with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
+    for i, file_path in enumerate(glob.glob(path)):
 
-    matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
-    m = matcher.match(file_name)
-    name_groups = m.groups()
-    if name_groups[1] == '' or name_groups[1] == None:
-        plot_name = 'XRD_' + str(name_groups[0]).zfill(4)
-    else:
-        plot_name = 'XRD_' + str(name_groups[0]).zfill(4) + '.' \
-                    + str(name_groups[1])
+        # Read individual file name and extracting sample number
+        file_name = os.path.basename(file_path)
+        file_name = file_name.replace('', '')[:-4]
 
-    # Checking if plot allready exists
-    exists = os.path.isfile(os.path.join(config['Plot XRD'],
-                                         '{0}.pdf'.format(plot_name)))
+        matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
+        m = matcher.match(file_name)
 
-    # Plotting non-existing files
-    if exists is False:
-            # Counter
-        n += 1
+        number, subnumber = m.groups()
+        if not subnumber:
+            subnumber = 'a'
+        plot_name = 'XRD_{0:04d}.{1}'.format(int(number), subnumber)
 
-        # Loading data form file
-        x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
-        
-        # getting actual count values
-        peak1 = np.interp(theta1[0], x, y)
-        peak2 = np.interp(theta2[0], x, y)
-        plt_peak1 = []
-        plt_peak2 = []
+        # Check if plot already exists
+        plot_filename = os.path.join(plot_path, '{0}.pdf'.format(plot_name))
+        exists = os.path.isfile(plot_filename)
 
-        for intens in intens1:
-            plt_peak1.append(intens/100 * peak1)
+        # Plot non-existing files
+        if not exists:
+                # Counter
+            n += 1
 
-        for intens in intens2:
-            plt_peak2.append(intens/100 * peak2)
+            # Load data from file
+            x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
 
-        # Plotting of ASCII files
-        plot_path = config['Plot XRD']
+            # get actual count values
+            peak1 = np.interp(theta1[0], x, y)
+            peak2 = np.interp(theta2[0], x, y)
+            plt_peak1 = []
+            plt_peak2 = []
 
-        with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
+            for intens in intens1:
+                plt_peak1.append(intens/100 * peak1)
+
+            for intens in intens2:
+                plt_peak2.append(intens/100 * peak2)
+
+            # Plot ASCII files
             fig = plt.figure()
             plt.plot(x, y, 'k')
 
-            for i in range(len(theta1)):
-                plt.plot([theta1[i], theta1[i]], [0, plt_peak1[i]], 'r',
-                         label='Hydrotalcite')
+            plt.stem(theta1, plt_peak1,
+                     linefmt='r', markerfmt=' ', basefmt=' ',
+                     label='Hydrotalcite')
 
-            for i in range(len(theta2)):
-                plt.plot([theta2[i], theta2[i]], [0, plt_peak2[i]], 'b',
-                         label='Hydrotalcite2')
+            plt.stem(theta2, plt_peak2,
+                     linefmt='b', markerfmt=' ', basefmt=' ',
+                     label='Hydrotalcite2')
 
-            plt.xlabel("$2{\Theta}$")
+            plt.xlabel("$2\theta$")
             plt.ylabel('Counts')
             plt.title(plot_name)
             plt.legend(loc=0)
-            plt.savefig(os.path.join(plot_path, '{0}.pdf'.format(plot_name)),
+            plt.savefig(plot_filename,
                         figsize=(5, 5), dpi=600)
             pdf.savefig()
             plt.close()
