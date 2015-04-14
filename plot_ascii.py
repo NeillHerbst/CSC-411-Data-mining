@@ -116,13 +116,13 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             fig = plt.figure()
             plt.plot(x, y, 'k')
 
-            for i in range(len(theta1)):
-                plt.plot([theta1[i], theta1[i]], [0, plt_peak1[i]], 'r',
-                         label='Hydrotalcite')
+            plt.stem(theta1, plt_peak1,
+                     linefmt='r', markerfmt=' ', basefmt=' ',
+                     label='Hydrotalcite')
 
-            for i in range(len(theta2)):
-                plt.plot([theta2[i], theta2[i]], [0, plt_peak2[i]], 'b',
-                         label='Hydrotalcite2')
+            plt.stem(theta2, plt_peak2,
+                     linefmt='b', markerfmt=' ', basefmt=' ',
+                     label='Hydrotalcite2')
 
             plt.xlabel("$2{\Theta}$")
             plt.ylabel('Counts')
