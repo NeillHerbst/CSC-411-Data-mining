@@ -108,12 +108,10 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             fig = plt.figure()
             plt.plot(x, y, 'k')
 
-            for i in range(len(theta1)):
-                plt.plot([theta1[i], theta1[i]], [0, plt_peak1[i]], 'r',
+            plt.stem(theta1, plt_peak1, linefmt='r', markerfmt=' ',
                          label='Hydrotalcite')
 
-            for i in range(len(theta2)):
-                plt.plot([theta2[i], theta2[i]], [0, plt_peak2[i]], 'b',
+            plt.stem(theta2, plt_peak2, linefmt='b', markerfmt=' ',
                          label='Hydrotalcite2')
 
             plt.xlabel("$2{\Theta}$")
