@@ -21,47 +21,32 @@ with open('config.json') as f:
 def filename(location, pattern):
     return os.path.expanduser(os.path.join(config[location], pattern))
     
-# Create path to datafiles
-path = filename('ASCII Files', '*Sample*/*.ASC')
-
-# Create path to XRD peak patterns
-XRD1 = filename('Peak Patterns', 'Hydrotalcite.csv')
-XRD2 = filename('Peak Patterns', 'Hydrotalcite2.csv')
+def readpeaks(peakfile):
+    # Load peak patterns
+    d, I = np.loadtxt(peakfile, delimiter=',', skiprows=1, usecols=(4, 6),
+                      unpack=True)
+    # Calculate 2Theta values
+    two_theta = 2 * np.arcsin(1.79/(2*d)) * 180/np.pi
+    # Retrieve 3 largest peaks
+    maxpeaks = heapq.nlargest(3, I)
+    # Retrieve relative 2Theta values for Max peaks
+    theta = []
+    intens = []
+    for i, val in enumerate(I):
+        if val == maxpeaks[0] or val == maxpeaks[1] or \
+          val == maxpeaks[2]:
+            theta.append(two_theta[i])
+            intens.append(val)
+    return theta, intens
 
 # Initialize the counter
 n = 0
 
-# Load peak patterns
-d1, I1 = np.loadtxt(XRD1, delimiter=',', skiprows=1, usecols=(4, 6),
-                    unpack=True)
-d2, I2 = np.loadtxt(XRD2, delimiter=',', skiprows=1, usecols=(4, 6),
-                    unpack=True)
-# Calculate 2Theta values
-two_theta1 = 2 * np.arcsin(1.79/(2*d1)) * 180/np.pi
-two_theta2 = 2 * np.arcsin(1.79/(2*d1)) * 180/np.pi
+# Create path to datafiles
+path = filename('ASCII Files', '*Sample*/*.ASC')
 
-# Retrieve 3 largets peaks
-maxpeaks1 = heapq.nlargest(3, I1)
-maxpeaks2 = heapq.nlargest(3, I2)
-
-# Retrieve relative 2Theta values for Max peaks
-theta1 = []
-intens1 = []
-
-theta2 = []
-intens2 = []
-
-for i, val in enumerate(I1):
-    if val == maxpeaks1[0] or val == maxpeaks1[1] or \
-     val == maxpeaks1[2]:
-        theta1.append(two_theta1[i])
-        intens1.append(val)
-
-for i, val in enumerate(I2):
-    if val == maxpeaks2[0] or val == maxpeaks2[1] or \
-     val == maxpeaks2[2]:
-        theta2.append(two_theta2[i])
-        intens2.append(val)
+theta1, intens1 = readpeaks(filename('Peak Patterns', 'Hydrotalcite.csv'))
+theta2, intens2 = readpeaks(filename('Peak Patterns', 'Hydrotalcite2.csv'))
 
 plot_path = filename('Plot XRD', '')
 
