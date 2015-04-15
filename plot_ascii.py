@@ -23,6 +23,7 @@ def filename(location, pattern):
     return os.path.expanduser(os.path.join(config[location], pattern))
     
 def readpeaks(peakfile):
+    name = os.path.basename(peakfile)[:-4]
     # Load peak patterns
     d, I = np.loadtxt(peakfile, delimiter=',', skiprows=1, usecols=(4, 6),
                       unpack=True)
@@ -38,7 +39,7 @@ def readpeaks(peakfile):
           val == maxpeaks[2]:
             theta.append(two_theta[i])
             intens.append(val)
-    return theta, intens
+    return name, theta, intens
 
 # Initialize the counter
 n = 0
@@ -46,8 +47,11 @@ n = 0
 # Create path to datafiles
 path = filename('ASCII Files', '*Sample*/*.ASC')
 
-theta1, intens1 = readpeaks(filename('Peak Patterns', 'Hydrotalcite.csv'))
-theta2, intens2 = readpeaks(filename('Peak Patterns', 'Hydrotalcite2.csv'))
+peakpatterns = [readpeaks(peakfile)
+                for peakfile in glob.glob(filename('Peak Patterns', '*.csv'))]
+# 5 point qualitative scale from http://colorbrewer2.org/
+# TODO: Use seaborn (http://stanford.edu/~mwaskom/software/seaborn/) instead
+linefmts = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e']
 
 plot_path = filename('Plot XRD', '')
 excel_path = filename('Data', 'XRD_results.xlsx')
@@ -55,7 +59,7 @@ filename_lst = []
 
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
-    for i, file_path in enumerate(glob.glob(path)):
+    for i, file_path in enumerate(glob.glob(path)[:4]):
 
         # Read individual file name and extracting sample number
         file_name = os.path.basename(file_path)
@@ -84,41 +88,29 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             # Load data from file
             x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
 
-            # Get actual count values
-            peak1 = np.interp(theta1[0], x, y)
-            peak2 = np.interp(theta2[0], x, y)
-            plt_peak1 = []
-            plt_peak2 = []
-
-            for intens in intens1:
-                plt_peak1.append(intens/100 * peak1)
-
-            for intens in intens2:
-                plt_peak2.append(intens/100 * peak2)
-
-            # Plot ASCII files
+            # Plot data
             fig = plt.figure()
             plt.plot(x, y, 'k')
 
-            plt.stem(theta1, plt_peak1,
-                     linefmt='r', markerfmt=' ', basefmt=' ',
-                     label='Hydrotalcite')
+            # Plot peaks
+            for linefmt, (name, theta, intens) in zip(linefmts, peakpatterns):
+                # Get actual count values
+                peak = np.interp(theta[0], x, y)
+                plt_peak = np.array(intens)/100.*peak
+                plt.stem(theta, plt_peak,
+                         linefmt=linefmt, markerfmt=' ', basefmt=' ',
+                         label=name)
 
-            plt.stem(theta2, plt_peak2,
-                     linefmt='b', markerfmt=' ', basefmt=' ',
-                     label='Hydrotalcite2')
-
-            plt.xlabel("$2\theta$")
+            plt.xlabel(r"$2\theta$")
             plt.ylabel('Counts')
             plt.title(plot_name)
             plt.legend(loc=0)
-            plt.savefig(plot_filename,
-                        figsize=(5, 5), dpi=600)
+            plt.savefig(plot_filename)
             pdf.savefig()
             plt.close()
 print '{0} Files plotted'.format(n)
 
-# Saving excel file
+# Save Excel file
 excel_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
 excel_df = pd.DataFrame(excel_dict)
 excel_df.to_excel(excel_path)
