@@ -59,7 +59,7 @@ filename_lst = []
 
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
-    for i, file_path in enumerate(glob.glob(path)[:4]):
+    for i, file_path in enumerate(glob.glob(path)):
 
         # Read individual file name and extracting sample number
         file_name = os.path.basename(file_path)
