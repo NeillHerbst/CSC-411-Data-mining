@@ -15,6 +15,8 @@ import re
 import heapq
 import pandas as pd
 
+TWOTHETA_CUTOFF = 5
+
 # Get all working directories
 with open('config.json') as f:
     config = json.load(f)
@@ -54,7 +56,7 @@ peakpatterns = [readpeaks(peakfile)
 linefmts = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e']
 
 plot_path = filename('Plot XRD', '')
-excel_path = filename('Data', 'XRD_results.xlsx')
+output_path = filename('Data', 'XRD_results.csv')
 filename_lst = []
 
 # Loop through all ASCII files
@@ -79,7 +81,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
 
         # Plot non-existing files
         if not exists:
-            # Save filename to excel spread sheet
+            # Save filename to record
             filename_lst.append(plot_name)
 
             # Counter
@@ -88,6 +90,11 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             # Load data from file
             x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
 
+            # Filter for 2theta cutoff
+            good = x >= TWOTHETA_CUTOFF
+            x = x[good]
+            y = y[good]
+            
             # Plot data
             fig = plt.figure()
             plt.plot(x, y, 'k')
@@ -110,7 +117,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             plt.close()
 print '{0} Files plotted'.format(n)
 
-# Save Excel file
-excel_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
-excel_df = pd.DataFrame(excel_dict)
-excel_df.to_excel(excel_path)
+# Save file
+output_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
+output_df = pd.DataFrame(output_dict)
+output_df.to_csv(output_path)
