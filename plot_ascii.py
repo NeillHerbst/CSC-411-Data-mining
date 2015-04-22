@@ -56,21 +56,13 @@ def method_filter(method):
     batch_id = xl_batches['batch_id'][:].values
     syn_id = xl_batches['syn_id'][:].values
     syn_names = xl_syn_names['description'][:].values
-    method_id = xl_syn_names['syn_id'][:].values
 
-    # retrieving syn_id from method names
-    for i, name in enumerate(syn_names):
-        if name == method:
-            m_id = method_id[i]
-            break
+    # retrieving method id as displayed in excel file
+    m_id = np.where(syn_names == method)[0][0] + 1
 
     # filtering values
-    lim1 = syn_id > (m_id - 1)
-    batch_id = batch_id[lim1]
-
-    lim2 = syn_id < (m_id + 1)
-    batch_id = batch_id[lim2]
-    batch_id = batch_id.values
+    batch_index = np.where(syn_id != m_id)
+    batch_id = np.delete(batch_id, batch_index)
 
     return batch_id
 
