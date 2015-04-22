@@ -16,6 +16,7 @@ import heapq
 import pandas as pd
 
 TWOTHETA_CUTOFF = 5
+METHOD = 'Intercalation'
 
 # Get all working directories
 with open('config.json') as f:
@@ -43,6 +44,36 @@ def readpeaks(peakfile):
             intens.append(val)
     return name, theta, intens
 
+def method_filter(method):
+
+    # Retrieving files
+    xl_file_path = filename('Data', 'Sample_list_database.xlsx')
+    xl_file_main = pd.ExcelFile(xl_file_path)
+    xl_batches = xl_file_main.parse('Batches')
+    xl_syn_names = xl_file_main.parse('Synthesis')
+
+    # creating arrays
+    batch_id = xl_batches['batch_id'][:].values
+    syn_id = xl_batches['syn_id'][:].values
+    syn_names = xl_syn_names['description'][:].values
+    method_id = xl_syn_names['syn_id'][:].values
+
+    # retrieving syn_id from method names
+    for i, name in enumerate(syn_names):
+        if name == method:
+            m_id = method_id[i]
+            break
+
+    # filtering values
+    lim1 = syn_id > (m_id - 1)
+    batch_id = batch_id[lim1]
+
+    lim2 = syn_id < (m_id + 1)
+    batch_id = batch_id[lim2]
+    batch_id = batch_id.values
+
+    return batch_id
+
 # Initialize the counter
 n = 0
 
@@ -59,9 +90,14 @@ plot_path = filename('Plot XRD', '')
 output_path = filename('Data', 'XRD_results.csv')
 filename_lst = []
 
+# filtering methods from sample list
+batch_id = method_filter(5)
+k = 0
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
     for i, file_path in enumerate(glob.glob(path)):
+        # Initialize the method filter variable
+        method_found = None
 
         # Read individual file name and extracting sample number
         file_name = os.path.basename(file_path)
@@ -69,8 +105,16 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
 
         matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
         m = matcher.match(file_name)
-
         number, subnumber = m.groups()
+
+        # batch number from XRD file name
+        batch_file = str(number).zfill(3) + subnumber
+
+        # Comparing XRD file number with sample list number
+        for batch in batch_id:
+            if batch == batch_file:
+                method = True
+
         if not subnumber:
             subnumber = 'a'
         plot_name = 'XRD_{0:04d}.{1}'.format(int(number), subnumber)
@@ -94,7 +138,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             good = x >= TWOTHETA_CUTOFF
             x = x[good]
             y = y[good]
-            
+
             # Plot data
             fig = plt.figure()
             plt.plot(x, y, 'k')
@@ -112,6 +156,10 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             plt.ylabel('Counts')
             plt.title(plot_name)
             plt.legend(loc=0)
+
+            if method_found:
+                plt.figtext(0.73, 0.68, METHOD, weight='bold')
+
             plt.savefig(plot_filename)
             pdf.savefig()
             plt.close()
