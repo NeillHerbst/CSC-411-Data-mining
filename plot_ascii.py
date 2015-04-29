@@ -60,6 +60,7 @@ def method_filter(method):
     # retrieving method id as displayed in excel file
     m_id = np.where(syn_names == method)[0][0] + 1
 
+
     # filtering values
     batch_index = np.where(syn_id != m_id)
     batch_id = np.delete(batch_id, batch_index)
@@ -83,7 +84,7 @@ output_path = filename('Data', 'XRD_results.csv')
 filename_lst = []
 
 # filtering methods from sample list
-batch_id = method_filter(5)
+batch_id = method_filter(METHOD)
 k = 0
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
@@ -105,7 +106,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
         # Comparing XRD file number with sample list number
         for batch in batch_id:
             if batch == batch_file:
-                method = True
+                method_found = True
 
         if not subnumber:
             subnumber = 'a'
