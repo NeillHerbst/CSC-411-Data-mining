@@ -35,13 +35,8 @@ def readpeaks(peakfile):
     # Retrieve 3 largest peaks
     maxpeaks = heapq.nlargest(3, I)
     # Retrieve relative 2Theta values for Max peaks
-    theta = []
-    intens = []
-    for i, val in enumerate(I):
-        if val == maxpeaks[0] or val == maxpeaks[1] or \
-          val == maxpeaks[2]:
-            theta.append(two_theta[i])
-            intens.append(val)
+    theta, intens = zip(*[(twot, val) for twot, val in zip(two_theta, I)
+                          if val in maxpeaks[:3]])
     return name, theta, intens
 
 def method_filter(method):
@@ -86,17 +81,14 @@ filename_lst = []
 # filtering methods from sample list
 batch_id = method_filter(METHOD)
 k = 0
+matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
     for i, file_path in enumerate(glob.glob(path)):
-        # Initialize the method filter variable
-        method_found = None
-
         # Read individual file name and extracting sample number
         file_name = os.path.basename(file_path)
         file_name = file_name.replace('', '')[:-4]
 
-        matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
         m = matcher.match(file_name)
         number, subnumber = m.groups()
 
@@ -104,9 +96,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
         batch_file = str(number).zfill(3) + subnumber
 
         # Comparing XRD file number with sample list number
-        for batch in batch_id:
-            if batch == batch_file:
-                method_found = True
+        method_found = batch_file in batch_id
 
         if not subnumber:
             subnumber = 'a'
