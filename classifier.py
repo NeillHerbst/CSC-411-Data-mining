@@ -79,4 +79,4 @@ for i, y in enumerate(predict):
 
 acc = n/tot * 100
 
-print 'The preiction accuracy is {:.2f} %'.format(acc)
+print 'The prediction accuracy is {:.2f} %'.format(acc)
