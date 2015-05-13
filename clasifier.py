@@ -9,7 +9,7 @@ from sklearn import svm
 import pandas as pd
 import json
 import os
-import numpy
+import numpy as np
 
 # Get all working directories
 with open('config.json') as f:
@@ -30,9 +30,13 @@ Dat_file = Dat_file.parse('Sample List')
 Df = pd.DataFrame(Dat_file)
 
 # Important colums
-collist = ['Elements / Ratio','Stirrer Time', 'Temp (C)']
+collist = ['Stirrer Time', 'Temp (C)', 'Result']
 
-# Adjusting Dataframe to only inclue important colums
+# Adjusting Dataframe to only include important colums
 Df = Df[collist]
 
-print Df
+# Filtering dataframe to remove rows with no values
+Df = Df[np.isfinite(Df.Result)]
+Df = Df[np.isfinite(Df['Temp (C)'])]
+Df = Df[np.isfinite(Df['Stirrer Time'])]
+
