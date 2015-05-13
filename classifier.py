@@ -60,8 +60,7 @@ def component(DataFrame, column):
 Dat_path = filename('Data', 'Sample_list_v2.0.xlsx')
 
 # Data file
-Dat_file = pd.ExcelFile(Dat_path)
-Dat_file = Dat_file.parse('Sample List')
+Dat_file = pd.ExcelFile(Dat_path).parse('Sample List')
 
 # Dataframe
 Df = pd.DataFrame(Dat_file)
