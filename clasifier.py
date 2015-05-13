@@ -40,3 +40,17 @@ Df = Df[np.isfinite(Df.Result)]
 Df = Df[np.isfinite(Df['Temp (C)'])]
 Df = Df[np.isfinite(Df['Stirrer Time'])]
 
+
+# Data for SVM
+x_lst = ['Stirrer Time', 'Temp (C)']
+X = Df[x_lst]
+Y = Df['Result']
+
+# Creating SVM
+clf = svm.SVC(probability=True)
+clf.fit(X, Y)
+
+# Prediction
+Temp = 50
+Time = 120
+preict = clf.predict_proba([[Temp, Time]])[0]
