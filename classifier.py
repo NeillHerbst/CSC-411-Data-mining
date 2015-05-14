@@ -6,6 +6,7 @@ Created on Wed May 13 13:12:24 2015
 """
 from __future__ import division
 from sklearn import svm
+from sklearn import decomposition as decomp
 import pandas as pd
 import json
 import os
@@ -42,13 +43,13 @@ def component(DataFrame, column):
                          kat|[H, h]ydrocalumite|[P, p]ortlanite|[D,d]olomite)\
                          |(Mg\b|Mg\d|\Mg[^O,o]|Mag\b|Magnesium|Bricite\
                          |[M, m]eixnerite|HTC|[H, h]ydrotalcite|Dolomite\
-                         |Pyrosorb|Alcimazer|Meix)|([C, c]alcined)")
+                         |Pyrosorb|Alcimazer|Meix|{D,d]olomite)")
 
     for i, line in enumerate(vals):
         m = matcher.match(line.strip())
         if m:
-            ca, mg, calcined = m.groups()
-            if ca and not calcined:
+            ca, mg = m.groups()
+            if ca:
                 ca_lst[i] = 1
 
             if mg:
@@ -77,6 +78,14 @@ ca_lst, mg_lst = component(Df, 'Elements / Ratio')
 # Adding List of Ca and Mg results to Dataframe
 Df['Ca'] = ca_lst
 Df['Mg'] = mg_lst
+
+# Columns for PCA
+pca_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
+
+# Data Decomp
+pca = decomp.PCA()
+X = Df[pca_cols]
+pca.fit(X)
 
 # Fraction of data for training
 frac = 0.8
