@@ -24,7 +24,7 @@ with open('config.json') as f:
 
 def filename(location, pattern):
     return os.path.expanduser(os.path.join(config[location], pattern))
-    
+
 def readpeaks(peakfile):
     name = os.path.basename(peakfile)[:-4]
     # Load peak patterns
@@ -91,11 +91,56 @@ def method_name(batch_id, batch_file, METHOD):
 
     return syn_name, method_found
 
+def component(Element_list, Item_list, Item_no):
+    if Item_no in Item_list:
+        item_index = np.where(Item_list == Item_no)[0][0]
+        element_name = Element_list[item_index]
+        if isinstance(element_name, object):
+            matcher = re.compile("(Ca\\b|Ca\\d|Ca[^O,o]|Cal[M,m]|Calcium|Lime|Katoite|\
+                                 kat|[H, h]ydrocalumite|[P, p]ortlanite|[D,d]olomite)\
+                                 |(Mg\\b|Mg\\d|Mg[^O,o]|Mag\\b|Magnesium|Bricite\
+                                 |[M, m]eixnerite|HTC|[H, h]ydrotalcite|Dolomite\
+                                 |Pyrosorb|Alcimazer|Meix|[D,d]olomite)")
+        
+           
+            m = matcher.match(element_name.strip())
+            if m:
+                ca, mg = m.groups()
+                if ca:
+                    ca = 1
+                elif not ca:
+                    ca = 0
+        
+                if mg:
+                    mg = 1
+                elif not mg:
+                    mg = 0
+            else:
+                ca = 0
+                mg = 0
+        else:
+            ca = 'No info'
+            mg = 'No info'
+    else:
+        ca = 'No info'
+        mg = 'No info'
+        
+
+    return ca, mg
+
 # Initialize the counter
 n = 0
 
 # Create path to datafiles
 path = filename('ASCII Files', '*Sample*/*.ASC')
+sample_path = filename('Data', 'Sample_list_v3.0.xlsx')
+
+# Creating DataFrame containing the Elements of each sample
+element_file = pd.ExcelFile(sample_path).parse('Sample List')
+element_file = pd.DataFrame(element_file)
+element_file = element_file[['Item Name', 'Elements / Ratio']]
+item_lst = element_file['Item Name'].values
+element_lst = element_file['Elements / Ratio'].values
 
 peakpatterns = [readpeaks(peakfile)
                 for peakfile in glob.glob(filename('Peak Patterns', '*.csv'))]
@@ -109,7 +154,7 @@ filename_lst = []
 
 # filtering methods from sample list
 batch_id, syn_ids, syn_names, syn_names_id = method_filter(METHOD)
-k = 0
+
 matcher = re.compile('.*[_ ]([0-9]+)([a-z]?).*')
 # Loop through all ASCII files
 with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
@@ -127,57 +172,60 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
         # Comparing XRD file number with sample list number and retrieving method name
         syn_name, method_found = method_name(batch_id, batch_file, METHOD)
         
-#        if not subnumber:
-#            subnumber = 'a'
-#        plot_name = 'XRD_{0:04d}.{1}'.format(int(number), subnumber)
-#
-#        # Check if plot already exists
-#        plot_filename = os.path.join(plot_path, '{0}.pdf'.format(plot_name))
-#        exists = os.path.isfile(plot_filename)
-#
-#        # Plot non-existing files
-#        if exists:
-#            # Save filename to record
-#            filename_lst.append(plot_name)
-#
-#            # Counter
-#            n += 1
-#
-#            # Load data from file
-#            x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
-#
-#            # Filter for 2theta cutoff
-#            good = x >= TWOTHETA_CUTOFF
-#            x = x[good]
-#            y = y[good]
-#
-#            # Plot data
-#            fig = plt.figure()
-#            plt.plot(x, y, 'k')
-#
-#            # Plot peaks
-#            for linefmt, (name, theta, intens) in zip(linefmts, peakpatterns):
-#                # Get actual count values
-#                peak = np.interp(theta[0], x, y)
-#                plt_peak = np.array(intens)/100.*peak
-#                plt.stem(theta, plt_peak,
-#                         linefmt=linefmt, markerfmt=' ', basefmt=' ',
-#                         label=name)
-#
-#            plt.xlabel(r"$2\theta$")
-#            plt.ylabel('Counts')
-#            plt.title(plot_name)
-#            plt.legend(loc=0)
-#
-#            if method_found:
-#                plt.figtext(0.73, 0.68, syn_name, weight='bold')
-#
-##            plt.savefig(plot_filename)
-##            pdf.savefig()
-#            plt.close()
-#print '{0} Files plotted'.format(n)
+        # Determining if sample contains Ca or Mg
+        ca, mg = component(element_lst, item_lst, batch_file)
+        
+        if not subnumber:
+            subnumber = 'a'
+        plot_name = 'XRD_{0:04d}.{1}'.format(int(number), subnumber)
+
+        # Check if plot already exists
+        plot_filename = os.path.join(plot_path, '{0}.pdf'.format(plot_name))
+        exists = os.path.isfile(plot_filename)
+
+        # Plot non-existing files
+        if exists:
+            # Save filename to record
+            filename_lst.append(plot_name)
+
+            # Counter
+            n += 1
+
+            # Load data from file
+            x, y = np.loadtxt(file_path, usecols=(0, 1), unpack=True)
+
+            # Filter for 2theta cutoff
+            good = x >= TWOTHETA_CUTOFF
+            x = x[good]
+            y = y[good]
+
+            # Plot data
+            fig = plt.figure()
+            plt.plot(x, y, 'k')
+
+            # Plot peaks
+            for linefmt, (name, theta, intens) in zip(linefmts, peakpatterns):
+                # Get actual count values
+                peak = np.interp(theta[0], x, y)
+                plt_peak = np.array(intens)/100.*peak
+                plt.stem(theta, plt_peak,
+                         linefmt=linefmt, markerfmt=' ', basefmt=' ',
+                         label=name)
+
+            plt.xlabel(r"$2\theta$")
+            plt.ylabel('Counts')
+            plt.title(plot_name)
+            plt.legend(loc=0)
+
+            if method_found:
+                plt.figtext(0.73, 0.68, syn_name, weight='bold')
+
+            plt.savefig(plot_filename)
+            pdf.savefig()
+            plt.close()
+print '{0} Files plotted'.format(n)
 
 # Save file
-#output_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
-#output_df = pd.DataFrame(output_dict)
-#output_df.to_csv(output_path)
+output_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
+output_df = pd.DataFrame(output_dict)
+output_df.to_csv(output_path)
