@@ -23,8 +23,8 @@ mg_matcher = re.compile('(Mg|Mg\\b|Mg\\d|Mg[^O,o]|CalMag|Magnesium\
 
 
 for line in name_file:
-    m_ca = ca_matcher.match(line.strip())
-    m_mg = mg_matcher.match(line.strip())
+    m_ca = ca_matcher.search(line.strip())
+    m_mg = mg_matcher.search(line.strip())
     
     print line.strip()
     print 'match ca',m_ca
@@ -53,20 +53,6 @@ for line in name_file:
         ca = 0
         mg = 0          
             
-#    if m:
-#        ca, mg = m.groups()
-#        if ca:
-#            ca = 1
-#        elif not ca:
-#            ca = 0
-#
-#        if mg:
-#            mg = 1
-#        elif not mg:
-#            mg = 0
-#    else:
-#        ca = 0
-#        mg = 0
     print 'Ca', 'Mg'
     print ca, mg
     print
