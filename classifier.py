@@ -39,26 +39,34 @@ def component(DataFrame, column):
     ca_lst = np.zeros(Npoints)
     mg_lst = np.zeros(Npoints)
 
-    matcher = re.compile(r"(Ca\b|Ca\d|Ca[^O,o]|Cal[M,m]|Calcium|Lime|Katoite|\
-                         kat|[H, h]ydrocalumite|[P, p]ortlanite|[D,d]olomite)\
-                         |(Mg\b|Mg\d|\Mg[^O,o]|Mag\b|Magnesium|Bricite\
-                         |[M, m]eixnerite|HTC|[H, h]ydrotalcite|Dolomite\
-                         |Pyrosorb|Alcimazer|Meix|{D,d]olomite)")
+    ca_matcher = re.compile('(Ca\\b|Ca\\d|Ca[^O,o,r,l,t]|CalMag|Calcium|[L,l]ime\
+                     |Katoite|kat|[H,h]ydrocalumite|[P,p]ortlanite|\
+                     [D,d]olomite)')
+
+    mg_matcher = re.compile('(Mg\\b|Mg\\d|Mg[^O,o]|CalMag|Magnesium\
+                             |Bricite|[M,m]eixnerite|HTC|[H,h]ydrotalcite|\
+                             [D,d]olomite|Pyrosorb|Alcimazer|Meix\
+                             |[D,d]olomite)')
 
     for i, line in enumerate(vals):
-        m = matcher.match(line.strip())
-        if m:
-            ca, mg = m.groups()
-            if ca:
+        m_ca = ca_matcher.match(line.strip())
+        m_mg = mg_matcher.match(line.strip())
+
+        if m_ca and m_mg:
+            ca_lst[i] = 1
+            mg_lst[i] = 1
+
+        elif m_ca or m_mg:
+            if m_ca:
                 ca_lst[i] = 1
 
-            if mg:
+            if m_mg:
                 mg_lst[i] = 1
 
     return ca_lst, mg_lst
 
 # Data path
-Dat_path = filename('Data', 'Sample_list_v2.0.xlsx')
+Dat_path = filename('Data', 'Sample_list_v3.0.xlsx')
 
 # Data file
 Dat_file = pd.ExcelFile(Dat_path).parse('Sample List')
@@ -81,7 +89,7 @@ Df['Mg'] = mg_lst
 
 # Columns for PCA
 pca_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
-
+print Df
 # Data Decomp
 pca = decomp.PCA()
 X = Df[pca_cols]
