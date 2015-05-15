@@ -53,20 +53,6 @@ for line in name_file:
         ca = 0
         mg = 0          
             
-#    if m:
-#        ca, mg = m.groups()
-#        if ca:
-#            ca = 1
-#        elif not ca:
-#            ca = 0
-#
-#        if mg:
-#            mg = 1
-#        elif not mg:
-#            mg = 0
-#    else:
-#        ca = 0
-#        mg = 0
     print 'Ca', 'Mg'
     print ca, mg
     print
