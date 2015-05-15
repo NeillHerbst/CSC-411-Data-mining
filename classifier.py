@@ -39,18 +39,17 @@ def component(DataFrame, column):
     ca_lst = np.zeros(Npoints)
     mg_lst = np.zeros(Npoints)
 
-    ca_matcher = re.compile('(Ca\\b|Ca\\d|Ca[^O,o,r,l,t]|CalMag|Calcium|[L,l]ime\
-                     |Katoite|kat|[H,h]ydrocalumite|[P,p]ortlanite|\
-                     [D,d]olomite)')
+    ca_matcher = re.compile('(Ca\\b|Ca\\d|Ca[^O,o,r,l,t]|CalMag|Calcium|Lime\
+                             |Katoite|kat|Hydrocalumite|Portlanite|\
+                             Dolomite)', re.IGNORECASE)
 
-    mg_matcher = re.compile('(Mg\\b|Mg\\d|Mg[^O,o]|CalMag|Magnesium\
-                             |Bricite|[M,m]eixnerite|HTC|[H,h]ydrotalcite|\
-                             [D,d]olomite|Pyrosorb|Alcimazer|Meix\
-                             |[D,d]olomite)')
+    mg_matcher = re.compile('(Mg|Mg\\b|Mg\\d|Mg[^O,o]|CalMag|Magnesium\
+                             |Bricite|Meixnerite|HTC|Hydrotalcite|\
+                             Dolomite|Pyrosorb|Alcimazer|Meix)', re.IGNORECASE)
 
     for i, line in enumerate(vals):
-        m_ca = ca_matcher.match(line.strip())
-        m_mg = mg_matcher.match(line.strip())
+        m_ca = ca_matcher.search(line.strip())
+        m_mg = mg_matcher.search(line.strip())
 
         if m_ca and m_mg:
             ca_lst[i] = 1
@@ -89,14 +88,16 @@ Df['Mg'] = mg_lst
 
 # Columns for PCA
 pca_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
-print Df
+
 # Data Decomp
-pca = decomp.PCA()
+pca = decomp.PCA(whiten=True)
 X = Df[pca_cols]
-pca.fit(X)
+fit = pca.fit(X)
+v = fit
+#print v
 
 # Fraction of data for training
-frac = 0.8
+frac = 0.5
 
 # Calculating Dataframe split position
 split = len(Df) * frac
