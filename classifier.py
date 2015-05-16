@@ -104,6 +104,7 @@ def result_finder(Sample_numbers, Results_file):
                         results_lst[i] = XRD_results[j]
                         
     return results_lst
+
 # Timer
 t0 = time.time()
 # Data path
@@ -132,7 +133,7 @@ Df['Results'] = results
 Df['Ca'] = ca_lst
 Df['Mg'] = mg_lst
 
-# Filtering samples that have no results file
+# Filtering samples that have no results file or Ca/Mg information
 filter_lst = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg', 'Results']
 Df = data_filter(Df, filter_lst)
 
