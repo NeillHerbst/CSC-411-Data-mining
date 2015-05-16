@@ -12,6 +12,7 @@ import json
 import os
 import numpy as np
 import re
+from matplotlib import pyplot as plt
 
 # Retrieve all working directories
 with open('config.json') as f:
@@ -92,9 +93,7 @@ pca_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
 # Data Decomp
 pca = decomp.PCA(whiten=True)
 X = Df[pca_cols]
-fit = pca.fit(X)
-v = fit
-#print v
+trans = pca.fit_transform(X)
 
 # Fraction of data for training
 frac = 0.5
