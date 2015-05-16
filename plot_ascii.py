@@ -91,31 +91,44 @@ def method_name(batch_id, batch_file, METHOD):
 
     return syn_name, method_found
 
+
 def component(Element_list, Item_list, Item_no):
     if Item_no in Item_list:
         item_index = np.where(Item_list == Item_no)[0][0]
         element_name = Element_list[item_index]
-        if isinstance(element_name, object):
-            matcher = re.compile("(Ca\\b|Ca\\d|Ca[^O,o]|Cal[M,m]|Calcium|Lime|Katoite|\
-                                 kat|[H, h]ydrocalumite|[P, p]ortlanite|[D,d]olomite)\
-                                 |(Mg\\b|Mg\\d|Mg[^O,o]|Mag\\b|Magnesium|Bricite\
-                                 |[M, m]eixnerite|HTC|[H, h]ydrotalcite|Dolomite\
-                                 |Pyrosorb|Alcimazer|Meix|[D,d]olomite)")
-        
-           
-            m = matcher.match(element_name.strip())
-            if m:
-                ca, mg = m.groups()
-                if ca:
+
+        ca_matcher = re.compile('(Ca\\b|Ca\\d|Ca[^O,o,r,l,t]|CalMag|Calcium|Lime\
+                                 |Katoite|kat|Hydrocalumite|Portlanite|\
+                                 Dolomite)', re.IGNORECASE)
+
+        mg_matcher = re.compile('(Mg|Mg\\b|Mg\\d|Mg[^O,o]|CalMag|Magnesium\
+                                 |Bricite|Meixnerite|HTC|Hydrotalcite|\
+                                 Dolomite|Pyrosorb|Alcimazer|Meix)',
+                                 re.IGNORECASE)
+
+        m_ca = ca_matcher.search(element_name.strip())
+        m_mg = mg_matcher.search(element_name.strip())
+
+        if element_name != '':
+            if m_ca and m_mg:
+                ca = 1
+                mg = 1
+                print m_ca.groups(), m_mg.groups()
+
+            elif m_ca or m_mg:
+                if m_ca:
+                    print m_ca.groups()
                     ca = 1
-                elif not ca:
+                elif not m_ca:
                     ca = 0
-        
-                if mg:
+
+                if m_mg:
                     mg = 1
-                elif not mg:
+                    print m_mg.groups()
+                elif not m_mg:
                     mg = 0
-            else:
+
+            elif not m_ca and not m_mg:
                 ca = 0
                 mg = 0
         else:
@@ -124,26 +137,32 @@ def component(Element_list, Item_list, Item_no):
     else:
         ca = 'No info'
         mg = 'No info'
-        
 
     return ca, mg
 
+
+def component_list(path):
+    element_file = pd.ExcelFile(sample_path).parse('Sample List')
+    element_file = pd.DataFrame(element_file)
+    element_file = element_file[['Item Name', 'Elements / Ratio']]
+    item_lst = element_file['Item Name'].values
+    element_lst = element_file['Elements / Ratio'].fillna('')
+
+    return item_lst, element_lst
 # Initialize the counter
 n = 0
 
 # Create path to datafiles
-path = filename('ASCII Files', '*Sample*/*.ASC')
+path = filename('ASCII Files', '*Sample*/VenterH_79.ASC')
 sample_path = filename('Data', 'Sample_list_v3.0.xlsx')
 
 # Creating DataFrame containing the Elements of each sample
-element_file = pd.ExcelFile(sample_path).parse('Sample List')
-element_file = pd.DataFrame(element_file)
-element_file = element_file[['Item Name', 'Elements / Ratio']]
-item_lst = element_file['Item Name'].values
-element_lst = element_file['Elements / Ratio'].values
+item_lst, element_lst = component_list(sample_path)
 
+# Reading peak patterns
 peakpatterns = [readpeaks(peakfile)
                 for peakfile in glob.glob(filename('Peak Patterns', '*.csv'))]
+
 # 5 point qualitative scale from http://colorbrewer2.org/
 # TODO: Use seaborn (http://stanford.edu/~mwaskom/software/seaborn/) instead
 linefmts = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e']
@@ -171,10 +190,10 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
 
         # Comparing XRD file number with sample list number and retrieving method name
         syn_name, method_found = method_name(batch_id, batch_file, METHOD)
-        
+
         # Determining if sample contains Ca or Mg
         ca, mg = component(element_lst, item_lst, batch_file)
-        
+
         if not subnumber:
             subnumber = 'a'
         plot_name = 'XRD_{0:04d}.{1}'.format(int(number), subnumber)
@@ -218,14 +237,17 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             plt.legend(loc=0)
 
             if method_found:
-                plt.figtext(0.73, 0.68, syn_name, weight='bold')
+                plt.figtext(0.5, 0.68, syn_name, weight='bold')
 
-            plt.savefig(plot_filename)
-            pdf.savefig()
-            plt.close()
+            plt.figtext(0.5, 0.63, 'Ca: {}'.format(ca), weight='bold')
+            plt.figtext(0.5, 0.58, 'Mg: {}'.format(mg), weight='bold')
+
+#            plt.savefig(plot_filename)
+#            pdf.savefig()
+#            plt.close()
 print '{0} Files plotted'.format(n)
 
 # Save file
-output_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
-output_df = pd.DataFrame(output_dict)
-output_df.to_csv(output_path)
+#output_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
+#output_df = pd.DataFrame(output_dict)
+#output_df.to_csv(output_path)
