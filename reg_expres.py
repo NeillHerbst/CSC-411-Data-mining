@@ -9,15 +9,15 @@ import re
 import pandas as pd
 
 
-name_file = ['Ca/Mg/Zn','Portlanite','Dolomite', 'CalMag', 'Meix', 'HTC', ' Meixnerite', 'Ca:Mg', 'Mg/Ca' ]
-ca_matcher = re.compile('(Ca\\b|Ca\\d|Ca[^O,o,r,l,t]|CalMag|Calcium|[L,l]ime\
-                     |Katoite|kat|[H,h]ydrocalumite|[P,p]ortlanite|\
-                     [D,d]olomite)')
+name_file = ['Ca/Mg/Zn','Portlanite','Dolomite', 'CalMag', 'Meix', 'HTC', ' Meixnerite', 'Ca:Mg', 'Mg/Ca', 'meix' ]
+ca_matcher = re.compile('(Ca\\b|Ca\\d|Ca[^O,o,r,l,t]|CalMag|Calcium|Lime\
+                     |Katoite|kat|Hydrocalumite|Portlanite|\
+                     Dolomite)', re.IGNORECASE)
 
          
 mg_matcher = re.compile('(Mg|Mg\\b|Mg\\d|Mg[^O,o]|CalMag|Magnesium\
-                         |Bricite|[M,m]eixnerite|HTC|[H,h]ydrotalcite|\
-                         [D,d]olomite|Pyrosorb|Alcimazer|Meix|[D,d]olomite)')
+                         |Bricite|Meixnerite|HTC|Hydrotalcite|\
+                         Dolomite|Pyrosorb|Alcimazer|Meix)',re.IGNORECASE)
                          
 
 
