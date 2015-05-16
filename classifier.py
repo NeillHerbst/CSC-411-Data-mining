@@ -162,7 +162,7 @@ frac = 0.5
 split = len(Df) * frac
 
 # Data for SVM
-x_lst = ['Stirrer Time', 'Temp (C)']
+x_lst = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
 X = Df[x_lst]
 
 x_train = X[X.index <= split]
