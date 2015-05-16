@@ -143,14 +143,15 @@ pca_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
 pca = decomp.PCA(n_components=2, whiten=True)
 X_fit = Df[pca_cols]
 X_r = pca.fit_transform(X_fit)
-y = Df['Results']
+y = Df['Results'].values
 target_names = ['No', 'Yes', 'Maybe', 'Partial']
 
 # Plotting of Reduced data
 plt.figure()
 for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
     plt.scatter(X_r[y == i, 0], X_r[y == i, 1], c=c, label=target_name)
-plt.legend()
+plt.legend(bbox_to_anchor=(0., -0.2, 1., -0.1), loc=3,
+           ncol=4, mode="expand", borderaxespad=0.)
 plt.title('PCA of XRD Data')
 
 # Fraction of data for training of SVM
@@ -160,7 +161,7 @@ frac = 0.5
 split = len(Df) * frac
 
 # Data for SVM
-x_lst = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
+x_lst = ['Stirrer Time', 'Temp (C)']
 X = Df[x_lst]
 
 x_train = X[X.index <= split]
