@@ -113,18 +113,17 @@ def component(Element_list, Item_list, Item_no):
             if m_ca and m_mg:
                 ca = 1
                 mg = 1
-                print m_ca.groups(), m_mg.groups()
 
             elif m_ca or m_mg:
                 if m_ca:
-                    print m_ca.groups()
+
                     ca = 1
                 elif not m_ca:
                     ca = 0
 
                 if m_mg:
                     mg = 1
-                    print m_mg.groups()
+
                 elif not m_mg:
                     mg = 0
 
@@ -153,7 +152,7 @@ def component_list(path):
 n = 0
 
 # Create path to datafiles
-path = filename('ASCII Files', '*Sample*/VenterH_78.ASC')
+path = filename('ASCII Files', '*Sample*/*.ASC')
 sample_path = filename('Data', 'Sample_list_v3.0.xlsx')
 
 # Creating DataFrame containing the Elements of each sample
@@ -203,7 +202,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
         exists = os.path.isfile(plot_filename)
 
         # Plot non-existing files
-        if not exists:
+        if exists:
             # Save filename to record
             filename_lst.append(plot_name)
 
@@ -242,9 +241,9 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             plt.figtext(0.5, 0.63, 'Ca: {}'.format(ca), weight='bold')
             plt.figtext(0.5, 0.58, 'Mg: {}'.format(mg), weight='bold')
 
-##            plt.savefig(plot_filename)
-##            pdf.savefig()
-##            plt.close()
+#            plt.savefig(plot_filename)
+            pdf.savefig()
+            plt.close()
 print '{0} Files plotted'.format(n)
 
 # Save file
