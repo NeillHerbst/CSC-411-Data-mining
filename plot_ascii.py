@@ -153,7 +153,7 @@ def component_list(path):
 n = 0
 
 # Create path to datafiles
-path = filename('ASCII Files', '*Sample*/VenterH_79.ASC')
+path = filename('ASCII Files', '*Sample*/VenterH_78.ASC')
 sample_path = filename('Data', 'Sample_list_v3.0.xlsx')
 
 # Creating DataFrame containing the Elements of each sample
@@ -203,7 +203,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
         exists = os.path.isfile(plot_filename)
 
         # Plot non-existing files
-        if exists:
+        if not exists:
             # Save filename to record
             filename_lst.append(plot_name)
 
@@ -242,12 +242,12 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             plt.figtext(0.5, 0.63, 'Ca: {}'.format(ca), weight='bold')
             plt.figtext(0.5, 0.58, 'Mg: {}'.format(mg), weight='bold')
 
-#            plt.savefig(plot_filename)
-#            pdf.savefig()
-#            plt.close()
+##            plt.savefig(plot_filename)
+##            pdf.savefig()
+##            plt.close()
 print '{0} Files plotted'.format(n)
 
 # Save file
-#output_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
-#output_df = pd.DataFrame(output_dict)
-#output_df.to_csv(output_path)
+output_dict = {'Result': [np.NaN]*len(filename_lst), 'Sample No': filename_lst}
+output_df = pd.DataFrame(output_dict)
+output_df.to_csv(output_path)
