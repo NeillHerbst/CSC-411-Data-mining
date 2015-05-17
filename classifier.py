@@ -123,7 +123,7 @@ collist = ['Item Name', 'Elements / Ratio', 'Stirrer Time', 'Temp (C)']
 Df = data_filter(Df, collist)
 
 # Retrieving results for remaning files
-results = result_finder(Df['Item Name'], 'XRD_Results_old.csv')
+results = result_finder(Df['Item Name'], 'XRD_Results.csv')
 
 # Lists of results for samples containing Ca an Mg
 ca_lst, mg_lst = component(Df, 'Elements / Ratio')
