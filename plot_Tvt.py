@@ -109,7 +109,8 @@ def result_finder(Sample_numbers, Results_file):
 def plot(plt_data, results, data_name, file_path):
     plt.figure()
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
-    for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
+    
+    for c, i, target_name in zip('rgyb', [0, 1, 2, 3], target_names):
         sns.regplot(plt_data[results == i, 0], plt_data[results == i, 1],
                     fit_reg=False, x_jitter=2, y_jitter=2, label=target_name,
                     color=c)
