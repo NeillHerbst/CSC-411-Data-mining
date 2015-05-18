@@ -103,26 +103,40 @@ def result_finder(Sample_numbers, Results_file):
 
                     if num1 == num2:
                         results_lst[i] = XRD_results[j]
-                        
+                    
     return results_lst
+
 
 def plot(plt_data, results, data_name, file_path):
     plt.figure()
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
-    
+    xj = 0.8
+
+    if data_name == 'both Ca and Mg' or 'Mg':
+        yj = 2.5*xj
+
+    else:
+        yj = xj
+
     for c, i, target_name in zip('rgyb', [0, 1, 2, 3], target_names):
-        sns.regplot(plt_data[results == i, 0], plt_data[results == i, 1],
-                    fit_reg=False, x_jitter=2, y_jitter=2, label=target_name,
-                    color=c)
-    sns.plt.legend(bbox_to_anchor=(0., -0.25, 1., -0.1), loc=3,
+        try:
+            sns.regplot(plt_data[results == i, 0], plt_data[results == i, 1],
+                        fit_reg=False, x_jitter=xj, y_jitter=yj,
+                        label=target_name, color=c)
+
+        except ValueError:
+            pass
+
+    plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
                ncol=4, mode="expand", borderaxespad=0.)
-    sns.plt.title('Samples containing {}'.format(data_name))
-    sns.plt.xlabel('Stirrer time $(h)$')
-    sns.plt.ylabel(r'Temperature $\degree C$')
-    sns.plt.xlim(xmin=-5)
-    sns.plt.tight_layout()
-#    plt.savefig(file_path)
-#    sns.plt.close()
+    plt.title(r'Samples containing {}'.format(data_name))
+    plt.xlabel('Stirrer time $(h)$')
+    plt.ylabel(r'Temperature $\degree C$')
+    plt.xlim(xmin=-5)
+    plt.ylim(ymin=0)
+    plt.tight_layout()
+    plt.savefig(file_path)
+    plt.close()
 
 
 # Data path
