@@ -7,6 +7,8 @@ Created on Wed May 13 13:12:24 2015
 from __future__ import division
 from sklearn import svm
 from sklearn import decomposition as decomp
+from sklearn.cross_validation import train_test_split
+from sklearn.dummy import DummyClassifier
 import pandas as pd
 import json
 import os
@@ -148,12 +150,15 @@ y = Df['Results'].values
 target_names = ['No', 'Yes', 'Maybe', 'Partial']
 
 # Plotting of Reduced data
+pca_path = filename('Plot XRD', 'PCA plot.pdf')
 plt.figure()
 for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
     plt.scatter(X_r[y == i, 0], X_r[y == i, 1], c=c, label=target_name)
 plt.legend(bbox_to_anchor=(0., -0.2, 1., -0.1), loc=3,
            ncol=4, mode="expand", borderaxespad=0.)
 plt.title('PCA of XRD Data')
+plt.savefig(pca_path)
+plt.close()
 
 # Fraction of data for training of SVM
 frac = 0.5
@@ -169,27 +174,32 @@ x_train = X[X.index <= split]
 x_test = X[X.index > split]
 
 Y = Df.Results
-y_train = Y[Y.index <= split]
+y_train = Y[Y.index <= split].values
+#index2 = np.where(y_train !=0)
+#y_train[index2] = 2
 y_test = Y[Y.index > split].values
+#index = np.where(y_test !=0)
+#y_test[index] = 2
 
 
 # Creating SVM
 clf = svm.SVC(probability=True)
 clf.fit(x_train, y_train)
+score = clf.score(x_test, y_test)
+
+# Creating dummy classifier
+clf_dum = DummyClassifier(strategy='stratified')
+clf_dum.fit(x_train, y_train)
+dum_score = clf_dum.score(x_test, y_test)
 
 # Prediction
 predict = clf.predict(x_test)
 
-# Accuracy
-n = 0
-tot = 0
-for i, y in enumerate(predict):
-    tot += 1
-    if y == y_test[i]:
-        n += 1
-
-acc = n/tot * 100
+# Ending timer
 timer2 = time.time() - t0
 
-print 'The prediction accuracy is {:.2f} %'.format(acc)
 print 'Runtime = {:.2f} s'.format(timer2)
+print 'Dummy score is {:.4f}'.format(dum_score)
+print 'Classifier score is {:.4f}'.format(score)
+
+
