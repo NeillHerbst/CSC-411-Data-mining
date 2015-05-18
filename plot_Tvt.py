@@ -14,6 +14,7 @@ import numpy as np
 import re
 from matplotlib import pyplot as plt
 import seaborn as sns
+from sklearn import svm
 
 
 # Retrieve all working directories
@@ -107,7 +108,7 @@ def result_finder(Sample_numbers, Results_file):
     return results_lst
 
 
-def plot(plt_data, results, data_name, file_path):
+def plot(plt_data, results, data_name, file_path, clf, X, h, all_data=False):
     plt.figure()
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
     xj = 0.8
@@ -127,16 +128,51 @@ def plot(plt_data, results, data_name, file_path):
         except ValueError:
             pass
 
+    X = X.values
+    
+    if data_name == 'Ca':
+        ca = np.ones(len(X[:, 1]))
+        mg = np.zeros(len(X[:, 1]))
+    
+    elif  data_name == 'Mg':
+        ca = np.zeros(len(X[:, 1]))
+        mg = np.ones(len(X[:, 1]))
+    
+    elif data_name == 'both Ca and Mg':
+        ca = np.ones(len(X[:, 1]))
+        mg = np.ones(len(X[:, 1]))
+    
+    elif data_name == 'None':
+        ca = np.zeros(len(X[:, 1]))
+        mg = np.zeros(len(X[:, 1]))
+    
+    # create a mesh to plot in
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+    
+    if not all_data:
+        Z = clf.predict(np.c_[xx.ravel(), yy.ravel()], ca, mg)
+    
+    elif all_data:
+        Z = clf.predict(np.c_[xx.ravel(), yy.ravel()], X[:, 2], X[:, 3])
+    
+    # Put the result into a color plot
+    Z = Z.reshape(xx.shape)
+    plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.8)
+    
+    # Plot detail
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
     plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
                ncol=4, mode="expand", borderaxespad=0.)
-    plt.title(r'Samples containing {}'.format(data_name))
+    plt.title('Samples containing {}'.format(data_name))
     plt.xlabel('Stirrer time $(h)$')
     plt.ylabel(r'Temperature $\degree C$')
-    plt.xlim(xmin=-5)
-    plt.ylim(ymin=0)
     plt.tight_layout()
-    plt.savefig(file_path)
-    plt.close()
+#    plt.savefig(file_path)
+#    plt.close()
 
 
 # Data path
@@ -168,6 +204,33 @@ Df['Mg'] = mg_lst
 # Filtering samples that have no results file or Ca/Mg information
 filter_lst = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg', 'Results']
 Df = data_filter(Df, filter_lst)
+
+# Fraction of data for training of SVM
+frac = 0.5
+
+# Calculating Dataframe split position
+split = len(Df) * frac
+
+# Data for SVM
+x_lst = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
+X = Df[x_lst]
+
+x_train = X[X.index <= split]
+x_test = X[X.index > split]
+
+Y = Df.Results
+y_train = Y[Y.index <= split].values
+#index2 = np.where(y_train !=0)
+#y_train[index2] = 2
+y_test = Y[Y.index > split].values
+#index = np.where(y_test !=0)
+#y_test[index] = 2
+
+
+# Creating SVM
+clf = svm.SVC(probability=True)
+clf.fit(x_train, y_train)
+score = clf.score(x_test, y_test)
 
 Df = Df.sort_index(by=['Results', 'Ca', 'Mg'], ascending=[True, True, True])
 
@@ -212,16 +275,16 @@ plot_both = filename('Plot XRD', 'Both_Samples.pdf')
 plot_all = filename('Plot XRD', 'All_Samples.pdf')
 
 # Plotting all data
-plot(plt_all, results_all, 'Both Mg and Ca', plot_all)
+#plot(plt_all, results_all, 'Both Mg and Ca', plot_all, clf, 2)
 
 # Plotting of Ca data
-plot(plt_ca, results_ca, 'Ca', plot_ca)
+plot(plt_ca, results_ca, 'Ca', plot_ca, clf, 2, all_data=False)
 
 # Plotting of Mg data
-plot(plt_mg, results_mg, 'Mg', plot_mg)
+#plot(plt_mg, results_mg, 'Mg', plot_mg, clf, 2)
 
 # Plotting of Samples containing no Ca or Mg
-plot(plt_no, results_no, 'no Mg or Ca', plot_no)
+#plot(plt_no, results_no, 'no Mg or Ca', plot_no, clf, 2)
 
 # Plotting of samples containing both Ca and Mg
-plot(plt_both, results_both, 'both Ca an Mg', plot_both)
+#plot(plt_both, results_both, 'both Ca an Mg', plot_both, clf, 2)
