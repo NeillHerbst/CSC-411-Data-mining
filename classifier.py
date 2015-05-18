@@ -201,5 +201,3 @@ timer2 = time.time() - t0
 print 'Runtime = {:.2f} s'.format(timer2)
 print 'Dummy score is {:.4f}'.format(dum_score)
 print 'Classifier score is {:.4f}'.format(score)
-
-
