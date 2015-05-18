@@ -157,6 +157,7 @@ for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
 plt.legend(bbox_to_anchor=(0., -0.2, 1., -0.1), loc=3,
            ncol=4, mode="expand", borderaxespad=0.)
 plt.title('PCA of XRD Data')
+plt.tight_layout()
 plt.savefig(pca_path)
 plt.close()
 
