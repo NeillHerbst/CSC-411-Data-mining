@@ -6,15 +6,15 @@ Created on Sun May 17 17:29:21 2015
 """
 
 from __future__ import division
-from sklearn import svm
-from sklearn import decomposition as decomp
+
 import pandas as pd
 import json
 import os
 import numpy as np
 import re
 from matplotlib import pyplot as plt
-import time
+import seaborn as sns
+
 
 # Retrieve all working directories
 with open('config.json') as f:
@@ -106,8 +106,24 @@ def result_finder(Sample_numbers, Results_file):
                         
     return results_lst
 
-# Timer
-t0 = time.time()
+def plot(plt_data, results, data_name, file_path):
+    plt.figure()
+    target_names = ['No', 'Yes', 'Maybe', 'Partial']
+    for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
+        sns.regplot(plt_data[results == i, 0], plt_data[results == i, 1],
+                    fit_reg=False, x_jitter=2, y_jitter=2, label=target_name,
+                    color=c)
+    sns.plt.legend(bbox_to_anchor=(0., -0.25, 1., -0.1), loc=3,
+               ncol=4, mode="expand", borderaxespad=0.)
+    sns.plt.title('Samples containing {}'.format(data_name))
+    sns.plt.xlabel('Stirrer time $(h)$')
+    sns.plt.ylabel(r'Temperature $\degree C$')
+    sns.plt.xlim(xmin=-5)
+    sns.plt.tight_layout()
+#    plt.savefig(file_path)
+#    sns.plt.close()
+
+
 # Data path
 Dat_path = filename('Data', 'Sample_list_v3.0.xlsx')
 
@@ -144,6 +160,10 @@ yes = [1]
 no = [0]
 data_cols = ['Stirrer Time', 'Temp (C)']
 
+# All Data
+plt_all = Df[data_cols].values
+results_all = Df['Results'].values
+
 # Samples Containing both Mg an Ca
 both_data = Df[Df['Ca'].isin(yes)]
 both_data = both_data[both_data['Mg'].isin(yes)]
@@ -169,66 +189,24 @@ plt_no = no_data[data_cols].values
 results_no = no_data['Results'].values
 
 
-# Plotting
-target_names = ['No', 'Yes', 'Maybe', 'Partial']
+# Plotting paths
 plot_ca = filename('Plot XRD', 'Ca_Samples.pdf')
 plot_mg = filename('Plot XRD', 'Mg_Samples.pdf')
 plot_no = filename('Plot XRD', 'No_Mg_Ca_Samples.pdf')
 plot_both = filename('Plot XRD', 'Both_Samples.pdf')
+plot_all = filename('Plot XRD', 'All_Samples.pdf')
+
+# Plotting all data
+plot(plt_all, results_all, 'Both Mg and Ca', plot_all)
 
 # Plotting of Ca data
-plt.figure(figsize = (10, 6))
-for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
-    plt.scatter(plt_ca[results_ca == i, 0], plt_ca[results_ca == i, 1],
-                c=c, label=target_name)
-plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
-           ncol=4, mode="expand", borderaxespad=0.)
-plt.title('Samples containing Ca')
-plt.xlabel('Stirrer time $(h)$')
-plt.ylabel(r'Temperature $\degree C$')
-plt.xlim(xmin=-5)
-plt.savefig(plot_ca)
-plt.close()
-
+plot(plt_ca, results_ca, 'Ca', plot_ca)
 
 # Plotting of Mg data
-plt.figure(figsize = (10, 6))
-for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
-    plt.scatter(plt_mg[results_mg == i, 0], plt_mg[results_mg == i, 1],
-                c=c, label=target_name)
-plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
-           ncol=4, mode="expand", borderaxespad=0.)
-plt.title('Samples containing Mg')
-plt.xlim(xmin=-5)
-plt.xlabel('Stirrer time $(h)$')
-plt.ylabel(r'Temperature $\degree C$')
-plt.savefig(plot_mg)
-plt.close()
+plot(plt_mg, results_mg, 'Mg', plot_mg)
 
 # Plotting of Samples containing no Ca or Mg
-plt.figure(figsize = (10, 6))
-for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
-    plt.scatter(plt_no[results_no == i, 0], plt_no[results_no == i, 1],
-                c=c, label=target_name)
-plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
-           ncol=4, mode="expand", borderaxespad=0.)
-plt.title('Samples containing no Ca or Mg')
-plt.xlim(xmin=-5)
-plt.xlabel('Stirrer time $(h)$')
-plt.ylabel(r'Temperature $\degree C$')
-plt.savefig(plot_no)
-plt.close()
+plot(plt_no, results_no, 'no Mg or Ca', plot_no)
 
 # Plotting of samples containing both Ca and Mg
-plt.figure(figsize = (10, 6))
-for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
-    plt.scatter(plt_both[results_both == i, 0], plt_both[results_both == i, 1], 
-                c=c, label=target_name)
-plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
-           ncol=4, mode="expand", borderaxespad=0.)
-plt.title('Samples containing both Ca and Mg')
-plt.xlim(xmin=-5)
-plt.xlabel('Stirrer time $(h)$')
-plt.ylabel(r'Temperature $\degree C$')
-plt.savefig(plot_both)
-plt.close()
+plot(plt_both, results_both, 'both Ca an Mg', plot_both)
