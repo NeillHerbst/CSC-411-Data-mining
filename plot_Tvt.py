@@ -108,7 +108,7 @@ def result_finder(Sample_numbers, Results_file):
     return results_lst
 
 
-def plot(plt_data, results, data_name, file_path, clf, X, h, all_data=False):
+def plot(plt_data, results, data_name, file_path):
     plt.figure()
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
     xj = 0.8
@@ -128,43 +128,6 @@ def plot(plt_data, results, data_name, file_path, clf, X, h, all_data=False):
         except ValueError:
             pass
 
-    X = X.values
-    
-    if data_name == 'Ca':
-        ca = np.ones(len(X[:, 1]))
-        mg = np.zeros(len(X[:, 1]))
-    
-    elif  data_name == 'Mg':
-        ca = np.zeros(len(X[:, 1]))
-        mg = np.ones(len(X[:, 1]))
-    
-    elif data_name == 'both Ca and Mg':
-        ca = np.ones(len(X[:, 1]))
-        mg = np.ones(len(X[:, 1]))
-    
-    elif data_name == 'None':
-        ca = np.zeros(len(X[:, 1]))
-        mg = np.zeros(len(X[:, 1]))
-    
-    # create a mesh to plot in
-    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                         np.arange(y_min, y_max, h))
-    
-    if not all_data:
-        Z = clf.predict(np.c_[xx.ravel(), yy.ravel()], ca, mg)
-    
-    elif all_data:
-        Z = clf.predict(np.c_[xx.ravel(), yy.ravel()], X[:, 2], X[:, 3])
-    
-    # Put the result into a color plot
-    Z = Z.reshape(xx.shape)
-    plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.8)
-    
-    # Plot detail
-    plt.xlim(xx.min(), xx.max())
-    plt.ylim(yy.min(), yy.max())
     plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
                ncol=4, mode="expand", borderaxespad=0.)
     plt.title('Samples containing {}'.format(data_name))
@@ -175,6 +138,40 @@ def plot(plt_data, results, data_name, file_path, clf, X, h, all_data=False):
 #    plt.close()
 
 
+def clf_Boundaries(X, Type, clf):
+    h = 1
+
+    # create a mesh to plot in
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+    if Type == 'Ca':
+        ca = np.ones(len(xx.ravel()))
+        mg = np.zeros(len(xx.ravel()))
+        
+    elif  Type == 'Mg':
+        ca = np.zeros(len(xx.ravel()))
+        mg = np.ones(len(xx.ravel()))
+    
+    elif Type == 'both':
+        ca = np.ones(len(xx.ravel()))
+        mg = np.ones(len(xx.ravel()))
+    
+    elif Type == 'None':
+        ca = np.zeros(len(xx.ravel()))
+        mg = np.zeros(len(xx.ravel()))
+    
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel(), ca, mg])
+    
+    # Put the result into a color plot
+    Z = Z.reshape(xx.shape)
+    plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.8)
+    
+    # Plot detail
+    plt.xlim(xx.min(), xx.max())
+    plt.ylim(yy.min(), yy.max())
+    
 # Data path
 Dat_path = filename('Data', 'Sample_list_v3.0.xlsx')
 
@@ -236,7 +233,7 @@ Df = Df.sort_index(by=['Results', 'Ca', 'Mg'], ascending=[True, True, True])
 
 yes = [1]
 no = [0]
-data_cols = ['Stirrer Time', 'Temp (C)']
+data_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
 
 # All Data
 plt_all = Df[data_cols].values
@@ -268,23 +265,28 @@ results_no = no_data['Results'].values
 
 
 # Plotting paths
-plot_ca = filename('Plot XRD', 'Ca_Samples.pdf')
+plot_ca = filename('Plot XRD', 'Ca_Samples.svg')
 plot_mg = filename('Plot XRD', 'Mg_Samples.pdf')
 plot_no = filename('Plot XRD', 'No_Mg_Ca_Samples.pdf')
 plot_both = filename('Plot XRD', 'Both_Samples.pdf')
 plot_all = filename('Plot XRD', 'All_Samples.pdf')
 
 # Plotting all data
-#plot(plt_all, results_all, 'Both Mg and Ca', plot_all, clf, 2)
+plot(plt_all, results_all, 'All data', plot_all)
 
 # Plotting of Ca data
-plot(plt_ca, results_ca, 'Ca', plot_ca, clf, 2, all_data=False)
+plot(plt_ca, results_ca, 'Ca', plot_ca)
+clf_Boundaries(plt_ca, 'Ca', clf)
+
 
 # Plotting of Mg data
-#plot(plt_mg, results_mg, 'Mg', plot_mg, clf, 2)
+plot(plt_mg, results_mg, 'Mg', plot_mg)
+clf_Boundaries(plt_mg, 'Mg', clf)
 
 # Plotting of Samples containing no Ca or Mg
-#plot(plt_no, results_no, 'no Mg or Ca', plot_no, clf, 2)
+plot(plt_no, results_no, 'no Mg or Ca', plot_no)
+clf_Boundaries(plt_no, 'None', clf)
 
 # Plotting of samples containing both Ca and Mg
-#plot(plt_both, results_both, 'both Ca an Mg', plot_both, clf, 2)
+plot(plt_both, results_both, 'both Ca and Mg', plot_both)
+clf_Boundaries(plt_both, 'both', clf)
