@@ -265,7 +265,7 @@ results_no = no_data['Results'].values
 
 
 # Plotting paths
-plot_ca = filename('Plot XRD', 'Ca_Samples.svg')
+plot_ca = filename('Plot XRD', 'Ca_Samples.pdf')
 plot_mg = filename('Plot XRD', 'Mg_Samples.pdf')
 plot_no = filename('Plot XRD', 'No_Mg_Ca_Samples.pdf')
 plot_both = filename('Plot XRD', 'Both_Samples.pdf')
