@@ -108,7 +108,7 @@ def result_finder(Sample_numbers, Results_file):
     return results_lst
 
 
-def plot(plt_data, results, data_name, file_path):
+def plot(plt_data, results, data_name):
     plt.figure()
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
     xj = 0.8
@@ -134,8 +134,6 @@ def plot(plt_data, results, data_name, file_path):
     plt.xlabel('Stirrer time $(h)$')
     plt.ylabel(r'Temperature $\degree C$')
     plt.tight_layout()
-#    plt.savefig(file_path)
-#    plt.close()
 
 
 def clf_Boundaries(X, Type, clf):
@@ -149,29 +147,62 @@ def clf_Boundaries(X, Type, clf):
     if Type == 'Ca':
         ca = np.ones(len(xx.ravel()))
         mg = np.zeros(len(xx.ravel()))
-        
-    elif  Type == 'Mg':
+
+    elif Type == 'Mg':
         ca = np.zeros(len(xx.ravel()))
         mg = np.ones(len(xx.ravel()))
-    
+
     elif Type == 'both':
         ca = np.ones(len(xx.ravel()))
         mg = np.ones(len(xx.ravel()))
-    
+
     elif Type == 'None':
         ca = np.zeros(len(xx.ravel()))
         mg = np.zeros(len(xx.ravel()))
-    
+
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel(), ca, mg])
-    
+
     # Put the result into a color plot
     Z = Z.reshape(xx.shape)
     plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.8)
-    
+
     # Plot detail
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
-    
+
+
+def plot_data_filter(Dataframe, Type, data_cols):
+    df = Dataframe
+    yes = [1]
+    no = [0]
+
+    if Type == 'Ca':
+        data = df[df['Ca'].isin(yes)]
+        data = data[data['Mg'].isin(no)]
+
+    elif Type == 'Mg':
+        data = df[df['Ca'].isin(no)]
+        data = data[data['Mg'].isin(yes)]
+
+    elif Type == 'both':
+        data = df[df['Ca'].isin(yes)]
+        data = data[data['Mg'].isin(yes)]
+
+    elif Type == 'None':
+        data = df[df['Ca'].isin(no)]
+        data = data[data['Mg'].isin(no)]
+
+    plot_data = data[data_cols].values
+    results = data['Results'].values
+
+    return plot_data, results
+
+def save_plot(file_path, save=True, close=True):
+    if save:
+        plt.savefig(file_path)
+    if close:
+        plt.close()
+
 # Data path
 Dat_path = filename('Data', 'Sample_list_v3.0.xlsx')
 
@@ -217,76 +248,62 @@ x_test = X[X.index > split]
 
 Y = Df.Results
 y_train = Y[Y.index <= split].values
-#index2 = np.where(y_train !=0)
-#y_train[index2] = 2
 y_test = Y[Y.index > split].values
-#index = np.where(y_test !=0)
-#y_test[index] = 2
-
 
 # Creating SVM
 clf = svm.SVC(probability=True)
 clf.fit(x_train, y_train)
 score = clf.score(x_test, y_test)
 
-Df = Df.sort_index(by=['Results', 'Ca', 'Mg'], ascending=[True, True, True])
-
-yes = [1]
-no = [0]
+# Data colums used for plotting
 data_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
 
-# All Data
+# Plotting All Data
 plt_all = Df[data_cols].values
 results_all = Df['Results'].values
 
-# Samples Containing both Mg an Ca
-both_data = Df[Df['Ca'].isin(yes)]
-both_data = both_data[both_data['Mg'].isin(yes)]
-plt_both = both_data[data_cols].values
-results_both = both_data['Results'].values
+# Plotting Samples Containing both Mg an Ca
+plt_both, results_both = plot_data_filter(Df, 'both', data_cols)
 
-# Samples containing only Ca
-ca_data = Df[Df['Ca'].isin(yes)]
-ca_data = ca_data[ca_data['Mg'].isin(no)]
-plt_ca = ca_data[data_cols].values
-results_ca = ca_data['Results'].values
+# PLotting Samples containing only Ca
+plt_ca, results_ca = plot_data_filter(Df, 'Ca', data_cols)
 
-# Samples containing only Mg
-mg_data = Df[Df['Mg'].isin(yes)]
-mg_data = mg_data[mg_data['Ca'].isin(no)]
-plt_mg = mg_data[data_cols].values
-results_mg = mg_data['Results'].values
+# Plotting Samples containing only Mg
+plt_mg, results_mg = plot_data_filter(Df, 'Mg', data_cols)
 
-# samples containing none
-no_data = Df[Df['Ca'].isin(no)]
-no_data = no_data[no_data['Mg'].isin(no)]
-plt_no = no_data[data_cols].values
-results_no = no_data['Results'].values
+# Plotting samples containing none
+plt_no, results_no = plot_data_filter(Df, 'None', data_cols)
 
+# File save format
+fmt = 'pdf'
 
-# Plotting paths
-plot_ca = filename('Plot XRD', 'Ca_Samples.pdf')
-plot_mg = filename('Plot XRD', 'Mg_Samples.pdf')
-plot_no = filename('Plot XRD', 'No_Mg_Ca_Samples.pdf')
-plot_both = filename('Plot XRD', 'Both_Samples.pdf')
-plot_all = filename('Plot XRD', 'All_Samples.pdf')
+# File paths to save plots
+plot_ca = filename('Plot XRD', 'Ca_Samples.{}'.format(fmt))
+plot_mg = filename('Plot XRD', 'Mg_Samples.{}'.format(fmt))
+plot_no = filename('Plot XRD', 'No_Mg_Ca_Samples.{}'.format(fmt))
+plot_both = filename('Plot XRD', 'Both_Samples.{}'.format(fmt))
+plot_all = filename('Plot XRD', 'All_Samples.{}'.format(fmt))
 
 # Plotting all data
-plot(plt_all, results_all, 'All data', plot_all)
+plot(plt_all, results_all, 'All data')
+save_plot(plot_all)
 
 # Plotting of Ca data
-plot(plt_ca, results_ca, 'Ca', plot_ca)
+plot(plt_ca, results_ca, 'Ca')
 clf_Boundaries(plt_ca, 'Ca', clf)
-
+save_plot(plot_all, False, False)
 
 # Plotting of Mg data
-plot(plt_mg, results_mg, 'Mg', plot_mg)
+plot(plt_mg, results_mg, 'Mg')
 clf_Boundaries(plt_mg, 'Mg', clf)
+save_plot(plot_all)
 
 # Plotting of Samples containing no Ca or Mg
-plot(plt_no, results_no, 'no Mg or Ca', plot_no)
+plot(plt_no, results_no, 'no Mg or Ca')
 clf_Boundaries(plt_no, 'None', clf)
+save_plot(plot_all)
 
 # Plotting of samples containing both Ca and Mg
-plot(plt_both, results_both, 'both Ca and Mg', plot_both)
+plot(plt_both, results_both, 'both Ca and Mg')
 clf_Boundaries(plt_both, 'both', clf)
+save_plot(plot_all)
