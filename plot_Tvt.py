@@ -111,6 +111,7 @@ def result_finder(Sample_numbers, Results_file):
 def plot(plt_data, results, data_name):
     plt.figure()
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
+#    target_names = ['No', 'Other']
     xj = 0.8
 
     if data_name == 'both Ca and Mg' or 'Mg':
@@ -138,7 +139,6 @@ def plot(plt_data, results, data_name):
 
 def clf_Boundaries(X, Type, clf):
     h = 1
-
     # create a mesh to plot in
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
@@ -161,7 +161,7 @@ def clf_Boundaries(X, Type, clf):
         mg = np.zeros(len(xx.ravel()))
 
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel(), ca, mg])
-
+    
     # Put the result into a color plot
     Z = Z.reshape(xx.shape)
     plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.8)
@@ -234,7 +234,7 @@ filter_lst = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg', 'Results']
 Df = data_filter(Df, filter_lst)
 
 # Fraction of data for training of SVM
-frac = 0.5
+frac = 1
 
 # Calculating Dataframe split position
 split = len(Df) * frac
@@ -247,13 +247,15 @@ x_train = X[X.index <= split]
 x_test = X[X.index > split]
 
 Y = Df.Results
+#index = np.where(Y != 0)[0]
+#Y[index] = 1
 y_train = Y[Y.index <= split].values
 y_test = Y[Y.index > split].values
 
 # Creating SVM
-clf = svm.SVC(probability=True)
+clf = svm.SVC(kernel='linear',probability=True)
 clf.fit(x_train, y_train)
-score = clf.score(x_test, y_test)
+#score = clf.score(x_test, y_test)
 
 # Data colums used for plotting
 data_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
@@ -286,12 +288,12 @@ plot_all = filename('Plot XRD', 'All_Samples.{}'.format(fmt))
 
 # Plotting all data
 plot(plt_all, results_all, 'All data')
-save_plot(plot_all)
+save_plot(plot_all, close=False)
 
 # Plotting of Ca data
 plot(plt_ca, results_ca, 'Ca')
 clf_Boundaries(plt_ca, 'Ca', clf)
-save_plot(plot_all, False, False)
+save_plot(plot_all, save=False, close=False)
 
 # Plotting of Mg data
 plot(plt_mg, results_mg, 'Mg')
