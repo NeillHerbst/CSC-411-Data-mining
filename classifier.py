@@ -175,21 +175,18 @@ x_train = X[X.index <= split]
 x_test = X[X.index > split]
 
 Y = Df.Results
+#index = np.where(Y != 0)[0]
+#Y[index] = 1
 y_train = Y[Y.index <= split].values
-#index2 = np.where(y_train !=0)
-#y_train[index2] = 2
 y_test = Y[Y.index > split].values
-#index = np.where(y_test !=0)
-#y_test[index] = 2
-
 
 # Creating SVM
-clf = svm.SVC(probability=True)
+clf = svm.SVC(kernel='linear', probability=True)
 clf.fit(x_train, y_train)
 score = clf.score(x_test, y_test)
 
 # Creating dummy classifier
-clf_dum = DummyClassifier(strategy='stratified')
+clf_dum = DummyClassifier(strategy='most_frequent')
 clf_dum.fit(x_train, y_train)
 dum_score = clf_dum.score(x_test, y_test)
 
@@ -202,3 +199,4 @@ timer2 = time.time() - t0
 print 'Runtime = {:.2f} s'.format(timer2)
 print 'Dummy score is {:.4f}'.format(dum_score)
 print 'Classifier score is {:.4f}'.format(score)
+
