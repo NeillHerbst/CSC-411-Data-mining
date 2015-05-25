@@ -108,11 +108,13 @@ def result_finder(Sample_numbers, Results_file):
     return results_lst
 
 
-def plot(plt_data, results, data_name):
-    plt.figure()
+def plot(plt_data, results, data_name, subplot=False):
+    if not subplot:
+        plt.figure()
+        
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
-#    target_names = ['No', 'Other']
-    xj = 0.8
+
+    xj = 2
 
     if data_name == 'both Ca and Mg' or 'Mg':
         yj = 2.5*xj
@@ -128,16 +130,18 @@ def plot(plt_data, results, data_name):
 
         except ValueError:
             pass
-
-    plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
-               ncol=4, mode="expand", borderaxespad=0.)
+    plt.loglog()
     plt.title('Samples containing {}'.format(data_name))
     plt.xlabel('Stirrer time $(h)$')
     plt.ylabel(r'Temperature $\degree C$')
-    plt.tight_layout()
+    
+    if not subplot:
+        plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
+                   ncol=4, mode="expand", borderaxespad=0.)
+        plt.tight_layout()
 
 
-def clf_Boundaries(X, Type, clf):
+def clf_Boundaries(X, Type, clf, path, close=True):
     h = 1
     # create a mesh to plot in
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
@@ -164,11 +168,16 @@ def clf_Boundaries(X, Type, clf):
     
     # Put the result into a color plot
     Z = Z.reshape(xx.shape)
-    plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.8)
+    plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.4)
+    
 
     # Plot detail
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
+    plt.savefig(path)
+    
+    if close:
+        plt.close()
 
 
 def plot_data_filter(Dataframe, Type, data_cols):
@@ -183,6 +192,7 @@ def plot_data_filter(Dataframe, Type, data_cols):
     elif Type == 'Mg':
         data = df[df['Ca'].isin(no)]
         data = data[data['Mg'].isin(yes)]
+        
 
     elif Type == 'both':
         data = df[df['Ca'].isin(yes)]
@@ -197,11 +207,6 @@ def plot_data_filter(Dataframe, Type, data_cols):
 
     return plot_data, results
 
-def save_plot(file_path, save=True, close=True):
-    if save:
-        plt.savefig(file_path)
-    if close:
-        plt.close()
 
 # Data path
 Dat_path = filename('Data', 'Sample_list_v3.0.xlsx')
@@ -234,7 +239,7 @@ filter_lst = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg', 'Results']
 Df = data_filter(Df, filter_lst)
 
 # Fraction of data for training of SVM
-frac = 1
+frac = 0.5
 
 # Calculating Dataframe split position
 split = len(Df) * frac
@@ -286,26 +291,42 @@ plot_no = filename('Plot XRD', 'No_Mg_Ca_Samples.{}'.format(fmt))
 plot_both = filename('Plot XRD', 'Both_Samples.{}'.format(fmt))
 plot_all = filename('Plot XRD', 'All_Samples.{}'.format(fmt))
 
+# Plotting settings
+subplot = True
+plot_close = False
+
 # Plotting all data
 plot(plt_all, results_all, 'All data')
-save_plot(plot_all, close=False)
+plt.save(plot_all)
+if plot_close:
+    plt.close()
 
 # Plotting of Ca data
-plot(plt_ca, results_ca, 'Ca')
-clf_Boundaries(plt_ca, 'Ca', clf)
-save_plot(plot_all, save=False, close=False)
+if subplot:
+    plt.subplot(2, 2, 1)
+plot(plt_ca, results_ca, 'Ca', subplot=subplot)
+clf_Boundaries(plt_ca, 'Ca', clf, plot_ca, close=plot_close)
 
 # Plotting of Mg data
-plot(plt_mg, results_mg, 'Mg')
-clf_Boundaries(plt_mg, 'Mg', clf)
-save_plot(plot_all)
+if subplot:
+    plt.subplot(2, 2, 2)
+plot(plt_mg, results_mg, 'Mg', subplot=subplot)
+clf_Boundaries(plt_mg, 'Mg', clf, plot_mg, close=plot_close)
 
 # Plotting of Samples containing no Ca or Mg
-plot(plt_no, results_no, 'no Mg or Ca')
-clf_Boundaries(plt_no, 'None', clf)
-save_plot(plot_all)
+if subplot:
+    plt.subplot(2, 2, 3)
+plot(plt_no, results_no, 'no Mg or Ca', subplot=subplot)
+clf_Boundaries(plt_no, 'None', clf, plot_no, close=plot_close)
 
 # Plotting of samples containing both Ca and Mg
-plot(plt_both, results_both, 'both Ca and Mg')
-clf_Boundaries(plt_both, 'both', clf)
-save_plot(plot_all)
+if subplot:
+    plt.subplot(2, 2, 4)
+plot(plt_both, results_both, 'both Ca and Mg', subplot=subplot)
+clf_Boundaries(plt_both, 'both', clf, plot_both, close=plot_close)
+
+# plotting details of subplot
+if subplot:
+    plt.legend(bbox_to_anchor=(-1.5, -0.4, 2.5, -0.1), loc=3,
+               ncol=4, mode="expand", borderaxespad=0.)
+    plt.tight_layout(h_pad=1, w_pad=1)
