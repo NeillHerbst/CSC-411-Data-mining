@@ -16,7 +16,7 @@ import numpy as np
 import re
 from matplotlib import pyplot as plt
 import time
-
+import seaborn as sns
 # Retrieve all working directories
 with open('config.json') as f:
     config = json.load(f)
@@ -152,8 +152,20 @@ target_names = ['No', 'Yes', 'Maybe', 'Partial']
 # Plotting of Reduced data
 pca_path = filename('Plot XRD', 'PCA plot.pdf')
 plt.figure()
+
+xj = 0.15
+yj = xj
+
 for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
-    plt.scatter(X_r[y == i, 0], X_r[y == i, 1], c=c, label=target_name)
+#    plt.scatter(X_r[y == i, 0], X_r[y == i, 1], c=c, label=target_name
+    try:
+            sns.regplot(X_r[y == i, 0], X_r[y == i, 1],
+                        fit_reg=False, x_jitter=xj, y_jitter=yj,
+                        label=target_name, color=c)
+
+    except ValueError:
+        pass
+    
 plt.legend(bbox_to_anchor=(0., -0.2, 1., -0.1), loc=3,
            ncol=4, mode="expand", borderaxespad=0.)
 plt.title('PCA of XRD Data')
