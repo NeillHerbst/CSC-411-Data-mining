@@ -180,13 +180,13 @@ def clf_Boundaries(X, Type, clf, path, close=True):
 
     # Put the result into a color plot
     Z = Z.reshape(xx.shape)
-    plt.contour(xx, yy, Z,alpha=0.8)
+    plt.contour(xx, yy, Z, alpha=0.8)
 
     # Plot detail
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
-#    plt.savefig(path)
-    
+    plt.savefig(path)
+
     if close:
         plt.close()
 
@@ -203,7 +203,6 @@ def plot_data_filter(Dataframe, Type, data_cols):
     elif Type == 'Mg':
         data = df[df['Ca'].isin(no)]
         data = data[data['Mg'].isin(yes)]
-        
 
     elif Type == 'both':
         data = df[df['Ca'].isin(yes)]
@@ -301,13 +300,12 @@ plot_both = filename('Plot XRD', 'Both_Samples.{}'.format(fmt))
 plot_all = filename('Plot XRD', 'All_Samples.{}'.format(fmt))
 
 # Plotting settings
-subplot = True
+subplot = False
 plot_close = False
 
 # Plotting all data
 plot(plt_all, results_all, 'All data')
-
-#plt.savefig(plot_all)
+plt.savefig(plot_all)
 if plot_close:
     plt.close()
 
@@ -339,6 +337,4 @@ clf_Boundaries(plt_both, 'both', clf, plot_both, close=plot_close)
 if subplot:
     plt.legend(bbox_to_anchor=(-1.5, -0.5, 2.5, -0.1), loc=3,
                ncol=4, mode="expand", borderaxespad=0.)
-#    plt.legend(proxy, ["range(2-3)", "range(3-4)", "range(4-6)"])               
     plt.tight_layout(h_pad=1, w_pad=1)
-    
