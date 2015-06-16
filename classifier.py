@@ -152,26 +152,29 @@ target_names = ['No', 'Yes', 'Maybe', 'Partial']
 # Plotting of Reduced data
 pca_path = filename('Plot XRD', 'PCA plot.pdf')
 plt.figure()
-
+plt.plot()
 xj = 0.15
 yj = xj
 
-for c, i, target_name in zip("rgym", [0, 1, 2, 4], target_names):
+for c, i, target_name, m in zip(['r', 'g','orange', 'm'], [0, 1, 2, 4], target_names,
+                             ['x', 'o', '^', 's']):
 #    plt.scatter(X_r[y == i, 0], X_r[y == i, 1], c=c, label=target_name
     try:
             sns.regplot(X_r[y == i, 0], X_r[y == i, 1],
                         fit_reg=False, x_jitter=xj, y_jitter=yj,
-                        label=target_name, color=c)
+                        label=target_name, color=c, marker=m)
 
     except ValueError:
         pass
-    
-plt.legend(bbox_to_anchor=(0., -0.2, 1., -0.1), loc=3,
+
+plt.legend(bbox_to_anchor=(0., -0.1, 1., -0.1), loc=3,
            ncol=4, mode="expand", borderaxespad=0.)
-plt.title('PCA of XRD Data')
+plt.title('PCA of XRD Data', y=1.01)
+sns.set_style('white')
+sns.set_style('ticks')
 plt.tight_layout()
 plt.savefig(pca_path)
-plt.close()
+#plt.close()
 
 # Fraction of data for training of SVM
 frac = 0.5

@@ -114,7 +114,7 @@ def plot(plt_data, results, data_name, subplot=False):
         
     target_names = ['No', 'Yes', 'Maybe', 'Partial']
 
-    xj = 2
+    xj = 1
 
     if data_name == 'both Ca and Mg' or 'Mg':
         yj = 2.5*xj
@@ -122,21 +122,28 @@ def plot(plt_data, results, data_name, subplot=False):
     else:
         yj = xj
 
-    for c, i, target_name in zip('rgyb', [0, 1, 2, 3], target_names):
+    for c, i, target_name, m in zip('rgyb', [0, 1, 2, 3], target_names,
+                                    ['x', 'o', '^', 's']):
         try:
             sns.regplot(plt_data[results == i, 0], plt_data[results == i, 1],
                         fit_reg=False, x_jitter=xj, y_jitter=yj,
-                        label=target_name, color=c)
+                        label=target_name, color=c, marker=m)
 
         except ValueError:
             pass
-    plt.loglog()
-    plt.title('Samples containing {}'.format(data_name))
+
+    plt.title('Samples containing {}'.format(data_name), y=1.05)
     plt.xlabel('Stirrer time $(h)$')
     plt.ylabel(r'Temperature $\degree C$')
+#    plt.xlim(xmin=0)
+#    plt.ylim(ymin=0)
+    plt.ylim(ymax=200)
+    sns.set_style('whitegrid')
+    sns.set_style('ticks')
+
     
     if not subplot:
-        plt.legend(bbox_to_anchor=(0., -0.15, 1., -0.1), loc=3,
+        plt.legend(bbox_to_anchor=(0., -0.195, 1., -0.1), loc=3,
                    ncol=4, mode="expand", borderaxespad=0.)
         plt.tight_layout()
 
@@ -144,8 +151,13 @@ def plot(plt_data, results, data_name, subplot=False):
 def clf_Boundaries(X, Type, clf, path, close=True):
     h = 1
     # create a mesh to plot in
-    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    if Type == 'Ca' or Type =='None':
+        x_min, x_max = -10, 200
+        y_min, y_max = 0, 200
+    else:
+        x_min, x_max = -10, 80
+        y_min, y_max = 0, 200
+        
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
                          np.arange(y_min, y_max, h))
     if Type == 'Ca':
@@ -165,16 +177,15 @@ def clf_Boundaries(X, Type, clf, path, close=True):
         mg = np.zeros(len(xx.ravel()))
 
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel(), ca, mg])
-    
+
     # Put the result into a color plot
     Z = Z.reshape(xx.shape)
-    plt.contourf(xx, yy, Z, cmap=plt.cm.Paired, alpha=0.4)
-    
+    plt.contour(xx, yy, Z,alpha=0.8)
 
     # Plot detail
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
-    plt.savefig(path)
+#    plt.savefig(path)
     
     if close:
         plt.close()
@@ -252,15 +263,13 @@ x_train = X[X.index <= split]
 x_test = X[X.index > split]
 
 Y = Df.Results
-#index = np.where(Y != 0)[0]
-#Y[index] = 1
 y_train = Y[Y.index <= split].values
 y_test = Y[Y.index > split].values
 
 # Creating SVM
 clf = svm.SVC(kernel='linear',probability=True)
 clf.fit(x_train, y_train)
-#score = clf.score(x_test, y_test)
+
 
 # Data colums used for plotting
 data_cols = ['Stirrer Time', 'Temp (C)', 'Ca', 'Mg']
@@ -282,7 +291,7 @@ plt_mg, results_mg = plot_data_filter(Df, 'Mg', data_cols)
 plt_no, results_no = plot_data_filter(Df, 'None', data_cols)
 
 # File save format
-fmt = 'pdf'
+fmt = '.svg'
 
 # File paths to save plots
 plot_ca = filename('Plot XRD', 'Ca_Samples.{}'.format(fmt))
@@ -297,7 +306,8 @@ plot_close = False
 
 # Plotting all data
 plot(plt_all, results_all, 'All data')
-plt.save(plot_all)
+
+#plt.savefig(plot_all)
 if plot_close:
     plt.close()
 
@@ -327,6 +337,8 @@ clf_Boundaries(plt_both, 'both', clf, plot_both, close=plot_close)
 
 # plotting details of subplot
 if subplot:
-    plt.legend(bbox_to_anchor=(-1.5, -0.4, 2.5, -0.1), loc=3,
+    plt.legend(bbox_to_anchor=(-1.5, -0.5, 2.5, -0.1), loc=3,
                ncol=4, mode="expand", borderaxespad=0.)
+#    plt.legend(proxy, ["range(2-3)", "range(3-4)", "range(4-6)"])               
     plt.tight_layout(h_pad=1, w_pad=1)
+    
