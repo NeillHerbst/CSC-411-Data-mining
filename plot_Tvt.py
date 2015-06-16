@@ -135,13 +135,10 @@ def plot(plt_data, results, data_name, subplot=False):
     plt.title('Samples containing {}'.format(data_name), y=1.05)
     plt.xlabel('Stirrer time $(h)$')
     plt.ylabel(r'Temperature $\degree C$')
-#    plt.xlim(xmin=0)
-#    plt.ylim(ymin=0)
     plt.ylim(ymax=200)
     sns.set_style('whitegrid')
     sns.set_style('ticks')
 
-    
     if not subplot:
         plt.legend(bbox_to_anchor=(0., -0.195, 1., -0.1), loc=3,
                    ncol=4, mode="expand", borderaxespad=0.)
@@ -151,13 +148,13 @@ def plot(plt_data, results, data_name, subplot=False):
 def clf_Boundaries(X, Type, clf, path, close=True):
     h = 1
     # create a mesh to plot in
-    if Type == 'Ca' or Type =='None':
+    if Type == 'Ca' or Type == 'None':
         x_min, x_max = -10, 200
         y_min, y_max = 0, 200
     else:
         x_min, x_max = -10, 80
         y_min, y_max = 0, 200
-        
+
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
                          np.arange(y_min, y_max, h))
     if Type == 'Ca':
@@ -266,7 +263,7 @@ y_train = Y[Y.index <= split].values
 y_test = Y[Y.index > split].values
 
 # Creating SVM
-clf = svm.SVC(kernel='linear',probability=True)
+clf = svm.SVC(kernel='linear', probability=True)
 clf.fit(x_train, y_train)
 
 
@@ -290,7 +287,7 @@ plt_mg, results_mg = plot_data_filter(Df, 'Mg', data_cols)
 plt_no, results_no = plot_data_filter(Df, 'None', data_cols)
 
 # File save format
-fmt = '.svg'
+fmt = 'svg'
 
 # File paths to save plots
 plot_ca = filename('Plot XRD', 'Ca_Samples.{}'.format(fmt))
