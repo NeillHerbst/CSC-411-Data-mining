@@ -7,7 +7,6 @@ Created on Wed May 13 13:12:24 2015
 from __future__ import division
 from sklearn import svm
 from sklearn import decomposition as decomp
-from sklearn.cross_validation import train_test_split
 from sklearn.dummy import DummyClassifier
 import pandas as pd
 import json
@@ -17,6 +16,7 @@ import re
 from matplotlib import pyplot as plt
 import time
 import seaborn as sns
+
 # Retrieve all working directories
 with open('config.json') as f:
     config = json.load(f)
@@ -104,7 +104,7 @@ def result_finder(Sample_numbers, Results_file):
 
                     if num1 == num2:
                         results_lst[i] = XRD_results[j]
-                        
+
     return results_lst
 
 # Timer
@@ -150,15 +150,15 @@ y = Df['Results'].values
 target_names = ['No', 'Yes', 'Maybe', 'Partial']
 
 # Plotting of Reduced data
-pca_path = filename('Plot XRD', 'PCA plot.pdf')
+pca_path = filename('Plot XRD', 'PCA plot.svg')
 plt.figure()
 plt.plot()
 xj = 0.15
 yj = xj
 
-for c, i, target_name, m in zip(['r', 'g','orange', 'm'], [0, 1, 2, 4], target_names,
-                             ['x', 'o', '^', 's']):
-#    plt.scatter(X_r[y == i, 0], X_r[y == i, 1], c=c, label=target_name
+for c, i, target_name, m in zip(['r', 'g','orange', 'm'], [0, 1, 2, 4], \
+                                target_names, ['x', 'o', '^', 's']):
+
     try:
             sns.regplot(X_r[y == i, 0], X_r[y == i, 1],
                         fit_reg=False, x_jitter=xj, y_jitter=yj,
@@ -190,8 +190,6 @@ x_train = X[X.index <= split]
 x_test = X[X.index > split]
 
 Y = Df.Results
-#index = np.where(Y != 0)[0]
-#Y[index] = 1
 y_train = Y[Y.index <= split].values
 y_test = Y[Y.index > split].values
 
@@ -214,4 +212,3 @@ timer2 = time.time() - t0
 print 'Runtime = {:.2f} s'.format(timer2)
 print 'Dummy score is {:.4f}'.format(dum_score)
 print 'Classifier score is {:.4f}'.format(score)
-
