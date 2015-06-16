@@ -7,7 +7,7 @@ import io
 with open('config.json', 'rU') as f:
     config = json.load(f)
 
-file_path = os.path.join(config['datadir2'], 'Sample 74 in air.txt')
+file_path = os.path.join(config['TGA'], 'Sample 74 in air.txt')
 txtfile = io.open(file_path, 'rU', encoding='iso8859')
 
 details = {}

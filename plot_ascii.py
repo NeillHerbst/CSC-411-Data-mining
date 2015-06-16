@@ -241,7 +241,7 @@ with PdfPages(os.path.join(plot_path, 'All plots.pdf')) as pdf:
             plt.figtext(0.5, 0.63, 'Ca: {}'.format(ca), weight='bold')
             plt.figtext(0.5, 0.58, 'Mg: {}'.format(mg), weight='bold')
 
-#            plt.savefig(plot_filename)
+            plt.savefig(plot_filename)
             pdf.savefig()
             plt.close()
 print '{0} Files plotted'.format(n)

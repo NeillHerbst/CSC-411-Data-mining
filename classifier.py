@@ -156,7 +156,7 @@ plt.plot()
 xj = 0.15
 yj = xj
 
-for c, i, target_name, m in zip(['r', 'g','orange', 'm'], [0, 1, 2, 4], \
+for c, i, target_name, m in zip(['r', 'g', 'orange', 'm'], [0, 1, 2, 4],
                                 target_names, ['x', 'o', '^', 's']):
 
     try:

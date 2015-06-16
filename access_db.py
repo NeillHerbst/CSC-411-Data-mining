@@ -14,8 +14,8 @@ import os
 with open('config.json') as f:
     config = json.load(f)
 
-path1 = os.path.join(config['datadir'], 'Sample_list_database.xlsx')
-path2 = os.path.join(config['datadir'], 'access.db')
+path1 = os.path.join(config['Data'], 'Sample_list_database.xlsx')
+path2 = os.path.join(config['Data'], 'access.db')
 
 try:
     con = lite.connect(path2)

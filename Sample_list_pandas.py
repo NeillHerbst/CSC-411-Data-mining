@@ -2,24 +2,31 @@ import sqlite3 as lite
 import pandas as pd
 import json
 import os
+import numpy as np
 
 
 with open('config.json') as f:
     config = json.load(f)
 
-path1 = os.path.join(config['datadir'], 'Sample_list.xlsx')
-path2 = os.path.join(config['datadir1'], 'Data_mining.db')
+path1 = os.path.join(config['Data'], 'Sample_list.xlsx')
+path2 = os.path.join(config['Data'], 'Data_mining.db')
 
-try:
-    con = lite.connect(path2)
+con = lite.connect(path2)
+
+# Test if datafile exists
+data = os.path.isfile(path1)
+if data:
     datafile = pd.ExcelFile(path1)
     stop = None
 
-except IOError:
-    print 'One of the files does not exist'
-    stop = 'yes'
+else:
+    stop = True
+    filename = os.path.basename(path1)
+    direc = os.path.dirname(path1)
+    print '"{}" does not exist in the directory: "{}"'.format(filename, direc)
 
-if stop is None:
+
+if not stop:
     with con:
         cur = con.cursor()
         datafile = datafile.parse('Sample List', header=1, skiprows=0)
